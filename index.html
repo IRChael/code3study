@@ -22,6 +22,43 @@
     repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.01) 4px, rgba(0,0,0,0.01) 5px);
     pointer-events: none; z-index: 9999; }
 
+
+  /* CUSTOM QUIZ BUILDER */
+  .cat-checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+  .cat-check { display: flex; align-items: center; gap: 0.6rem; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+  .cat-check:hover { border-color: var(--gold); }
+  .cat-check.checked { border-color: var(--gold); background: rgba(200,151,58,0.1); color: var(--gold2); }
+  .cat-check input { display: none; }
+  .cat-check-icon { font-size: 0.85rem; width: 16px; }
+  .cat-check-name { font-size: 0.8rem; }
+  .builder-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+
+  /* EXAM PREP */
+  .exam-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+  .exam-card:hover { border-color: var(--gold); }
+  .exam-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+  .exam-name { font-family: var(--display); font-size: 1.3rem; letter-spacing: 1px; color: var(--gold2); }
+  .exam-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; }
+  .exam-passcode { font-family: var(--mono); font-size: 0.8rem; color: var(--blue); background: rgba(77,154,255,0.1); border: 1px solid rgba(77,154,255,0.3); padding: 3px 10px; border-radius: 3px; }
+  .exam-timer-badge { font-family: var(--mono); font-size: 0.65rem; color: var(--red); background: rgba(255,45,85,0.1); border: 1px solid rgba(255,45,85,0.3); padding: 3px 8px; border-radius: 3px; }
+
+  /* TIMED EXAM SCREEN */
+  #screen-exam { background: var(--bg); align-items: center; justify-content: center; padding: 2rem; }
+  .exam-top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .exam-timer-display { font-family: var(--display); font-size: 2.5rem; color: var(--gold2); line-height: 1; }
+  .exam-timer-display.warn { color: var(--accent2); }
+  .exam-timer-display.urgent { color: var(--red); animation: pulse 0.8s ease-in-out infinite; }
+  .exam-title-display { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 2px; color: var(--text-dim); }
+
+  /* RESULTS - missed questions */
+  .missed-badge { background: rgba(255,45,85,0.12); border: 1px solid var(--red); color: var(--red); font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; padding: 3px 10px; border-radius: 3px; }
+  .pass-badge { background: rgba(0,255,136,0.12); border: 1px solid var(--green); color: var(--green); font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; padding: 3px 10px; border-radius: 3px; }
+
+  /* ENTER PASSCODE SCREEN */
+  .passcode-box { background: var(--surface); border: 1px solid rgba(77,154,255,0.3); border-radius: 12px; padding: 2.5rem; width: 100%; max-width: 400px; text-align: center; }
+  .passcode-title { font-family: var(--display); font-size: 1.8rem; letter-spacing: 2px; color: var(--blue); margin-bottom: 0.25rem; }
+  .passcode-sub { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 1.5rem; }
+
   /* STROBE - bloom flashes only, no bars */
   /* CERT LEVEL SELECTOR */
   .cert-selector { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
@@ -356,6 +393,7 @@
       <button class="nav-btn" id="dash-nav-home" onclick="setDashNav('home');showDashboardPage('home')">Home</button>
       <button class="nav-btn" id="dash-nav-quiz" onclick="setDashNav('quiz-select');showDashboardPage('quiz-select')">Quiz</button>
       <button class="nav-btn" id="dash-nav-submit" onclick="setDashNav('submit');showDashboardPage('submit')">Submit Q</button>
+      <button class="nav-btn" id="dash-nav-exam-prep" onclick="setDashNav('exam-prep');showDashboardPage('exam-prep')">Exam Prep</button>
       <button class="nav-btn" id="admin-nav-btn" style="display:none" onclick="setDashNav('admin');showDashboardPage('admin')">Admin</button>
       <div class="nav-divider"></div>
       <button class="nav-btn-accent" onclick="showScreen('screen-classroom');startClassroomMode()">🎓 Classroom</button>
@@ -376,6 +414,10 @@
       <button class="sidebar-btn" onclick="startQuizByCategory('Operations')"><span class="sidebar-icon">🚒</span> Operations</button>
       <button class="sidebar-btn" onclick="startQuizByCategory('Medical Terminology')"><span class="sidebar-icon">📖</span> Terminology</button>
       <button class="sidebar-btn" onclick="startQuizByCategory('Mixed')"><span class="sidebar-icon">🎲</span> Mixed / Random</button>
+      <div class="sidebar-label">STUDY TOOLS</div>
+      <button class="sidebar-btn" onclick="showDashboardPage('custom-quiz')"><span class="sidebar-icon">🎯</span> Custom Quiz</button>
+      <button class="sidebar-btn" id="sidebar-missed-btn" onclick="startMissedQuiz()" style="display:none"><span class="sidebar-icon">🔁</span> Retry Missed</button>
+      <button class="sidebar-btn" onclick="showDashboardPage('exam-prep')"><span class="sidebar-icon">📝</span> Exam Prep</button>
       <div class="sidebar-label">CONTRIBUTE</div>
       <button class="sidebar-btn" onclick="showDashboardPage('submit')"><span class="sidebar-icon">➕</span> Submit Question</button>
     </div>
@@ -387,6 +429,7 @@
           <div class="stat-card"><div class="stat-card-num" id="dash-total">—</div><div class="stat-card-label">QUESTIONS</div></div>
           <div class="stat-card green"><div class="stat-card-num" id="dash-categories">9</div><div class="stat-card-label">CATEGORIES</div></div>
           <div class="stat-card blue"><div class="stat-card-num" id="dash-pending">—</div><div class="stat-card-label">PENDING</div></div>
+          <div class="stat-card" style="cursor:pointer" onclick="startMissedQuiz()"><div class="stat-card-num" id="dash-missed" style="color:var(--red)">0</div><div class="stat-card-label">MISSED Q's</div></div>
         </div>
         <div class="page-header" style="margin-top:1rem"><div class="page-title" style="font-size:1.5rem">CATEGORIES</div></div>
         <div class="categories-grid">
@@ -455,7 +498,75 @@
         </div>
       </div>
 
+
+      <!-- CUSTOM QUIZ BUILDER PAGE -->
+      <div id="page-custom-quiz" style="display:none">
+        <div class="page-header"><div class="page-title">CUSTOM QUIZ</div><div class="page-sub">// BUILD YOUR OWN</div></div>
+        <div class="card" style="max-width:700px">
+          <div class="form-group">
+            <label class="form-label">SELECT CATEGORIES</label>
+            <div class="cat-checkbox-grid">
+              <div class="cat-check checked" id="cc-all" onclick="toggleCatAll()"><span class="cat-check-icon">🎲</span><span class="cat-check-name">All Categories</span></div>
+              <div class="cat-check" id="cc-airway" onclick="toggleCat('Airway & Breathing','cc-airway')"><span class="cat-check-icon">🫁</span><span class="cat-check-name">Airway & Breathing</span></div>
+              <div class="cat-check" id="cc-cardiology" onclick="toggleCat('Cardiology','cc-cardiology')"><span class="cat-check-icon">❤️</span><span class="cat-check-name">Cardiology</span></div>
+              <div class="cat-check" id="cc-trauma" onclick="toggleCat('Trauma','cc-trauma')"><span class="cat-check-icon">🩹</span><span class="cat-check-name">Trauma</span></div>
+              <div class="cat-check" id="cc-medical" onclick="toggleCat('Medical Emergencies','cc-medical')"><span class="cat-check-icon">🚑</span><span class="cat-check-name">Medical Emergencies</span></div>
+              <div class="cat-check" id="cc-pharm" onclick="toggleCat('Pharmacology','cc-pharm')"><span class="cat-check-icon">💊</span><span class="cat-check-name">Pharmacology</span></div>
+              <div class="cat-check" id="cc-assessment" onclick="toggleCat('Patient Assessment','cc-assessment')"><span class="cat-check-icon">📋</span><span class="cat-check-name">Patient Assessment</span></div>
+              <div class="cat-check" id="cc-ops" onclick="toggleCat('Operations','cc-ops')"><span class="cat-check-icon">🚒</span><span class="cat-check-name">Operations</span></div>
+              <div class="cat-check" id="cc-terms" onclick="toggleCat('Medical Terminology','cc-terms')"><span class="cat-check-icon">📖</span><span class="cat-check-name">Medical Terminology</span></div>
+            </div>
+          </div>
+          <div class="builder-row">
+            <div class="form-group" style="margin:0"><label class="form-label">QUESTIONS</label><input type="number" class="form-input" id="cq-count" value="10" min="1" max="50"></div>
+            <div class="form-group" style="margin:0"><label class="form-label">DIFFICULTY</label><select class="form-select" id="cq-difficulty"><option value="All">All Levels</option><option value="EMT-Basic">EMT-Basic</option><option value="EMT-Advanced">EMT-Advanced</option></select></div>
+            <div class="form-group" style="margin:0"><label class="form-label">TIMED?</label><select class="form-select" id="cq-timed"><option value="0">No Timer</option><option value="300">5 min</option><option value="600">10 min</option><option value="900">15 min</option><option value="1800">30 min</option></select></div>
+          </div>
+          <button class="btn-primary" onclick="launchCustomQuiz()" style="font-size:1rem;padding:10px 28px">BUILD &amp; START QUIZ →</button>
+        </div>
+      </div>
+
+      <!-- EXAM PREP PAGE -->
+      <div id="page-exam-prep" style="display:none">
+        <div class="page-header"><div class="page-title">EXAM PREP</div><div class="page-sub">// ENTER A PASSCODE TO TAKE AN ASSIGNED EXAM</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:800px">
+          <!-- Student: enter passcode -->
+          <div class="card">
+            <div style="font-family:var(--display);font-size:1.2rem;letter-spacing:1px;color:var(--gold2);margin-bottom:1rem">TAKE AN EXAM</div>
+            <div class="form-group"><label class="form-label">EXAM PASSCODE</label><input class="form-input" id="exam-passcode-input" placeholder="Enter code from instructor" style="text-transform:uppercase;letter-spacing:4px;font-family:var(--mono)" onkeydown="if(event.key==='Enter')joinExam()"></div>
+            <button class="btn-primary" onclick="joinExam()" style="font-size:1rem;padding:10px 24px">START EXAM →</button>
+          </div>
+          <!-- Missed questions card -->
+          <div class="card" style="cursor:pointer" onclick="startMissedQuiz()">
+            <div style="font-family:var(--display);font-size:1.2rem;letter-spacing:1px;color:var(--red);margin-bottom:0.5rem">RETRY MISSED</div>
+            <div style="font-size:0.85rem;color:var(--text-dim);line-height:1.6;margin-bottom:1rem">Retake only the questions you got wrong. Best way to fill the gaps.</div>
+            <div style="font-family:var(--mono);font-size:0.7rem;color:var(--red)" id="missed-count-label">0 questions saved</div>
+            <div style="margin-top:1rem"><span class="missed-badge">RETRY MISSED →</span></div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
+</div>
+
+
+<!-- TIMED EXAM -->
+<div class="screen" id="screen-exam">
+  <div class="quiz-container" style="max-width:750px">
+    <div class="exam-top-bar">
+      <div>
+        <div class="exam-title-display" id="exam-title-display">EXAM</div>
+        <div class="score-badge" style="margin-top:4px">Q <span id="exam-q-num">1</span> / <span id="exam-q-total">—</span></div>
+      </div>
+      <div class="exam-timer-display" id="exam-timer-display">--:--</div>
+    </div>
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="exam-progress" style="width:0%"></div></div>
+    <div class="quiz-category-tag" id="exam-category-tag"></div>
+    <div class="quiz-question" id="exam-question-text"></div>
+    <div class="quiz-options" id="exam-options"></div>
+    <div class="explanation" id="exam-explanation"></div>
+    <div class="quiz-footer"><div></div><button class="btn-primary" id="exam-next-btn" onclick="examNextQuestion()" style="display:none">NEXT →</button></div>
   </div>
 </div>
 
@@ -482,8 +593,10 @@
     <div class="results-score" id="results-score">—</div>
     <div class="results-message" id="results-message"></div>
     <div class="results-breakdown" id="results-breakdown"></div>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+    <div id="results-missed-banner" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;background:rgba(255,45,85,0.08);border:1px solid rgba(255,45,85,0.3);border-radius:6px;font-family:var(--mono);font-size:0.72rem;color:var(--red);letter-spacing:1px"></div>
+    <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">
       <button class="btn-primary" onclick="restartQuiz()">TRY AGAIN</button>
+      <button id="retry-missed-btn" class="btn-primary" style="display:none;background:linear-gradient(135deg,var(--red),#cc1a3a)" onclick="startMissedQuiz()">🔁 RETRY MISSED</button>
       <button class="btn-back" onclick="showScreen('screen-dashboard')">← DASHBOARD</button>
     </div>
   </div>
@@ -521,6 +634,7 @@
       <button class="nav-btn" id="inav-lesson-planner" onclick="setInstructorNav('lesson-planner');showInstructorTool('lesson-planner')">Lesson Planner</button>
       <button class="nav-btn" id="inav-quiz-builder" onclick="setInstructorNav('quiz-builder');showInstructorTool('quiz-builder')">Quiz Builder</button>
       <button class="nav-btn" id="inav-progress" onclick="setInstructorNav('progress');showInstructorTool('progress')">Progress</button>
+      <button class="nav-btn" id="inav-exam-manager" onclick="setInstructorNav('exam-manager');showInstructorTool('exam-manager')">Exams</button>
       <button class="nav-btn" id="inav-resources" onclick="setInstructorNav('resources');showInstructorTool('resources')">Resources</button>
       <div class="nav-divider"></div>
       <button class="nav-btn-instructor" onclick="showScreen('screen-classroom');startClassroomMode()">🎓 Classroom</button>
@@ -537,6 +651,7 @@
         <div class="instructor-card" onclick="showScreen('screen-classroom');startClassroomMode()"><div class="instructor-card-icon">🎓</div><div class="instructor-card-title">CLASSROOM MODE</div><div class="instructor-card-desc">Launch a live quiz for the class with countdown timer — great for projector use.</div></div>
         <div class="instructor-card" onclick="showInstructorTool('resources')"><div class="instructor-card-icon">📚</div><div class="instructor-card-title">QUICK REFERENCE</div><div class="instructor-card-desc">Protocol reminders, normal vitals, medication doses, and terminology guides.</div></div>
         <div class="instructor-card" onclick="showDashboardPage('add-question');showScreen('screen-dashboard')"><div class="instructor-card-icon">➕</div><div class="instructor-card-title">ADD QUESTIONS</div><div class="instructor-card-desc">Add approved questions directly to the bank for your students.</div></div>
+        <div class="instructor-card" onclick="showInstructorTool('exam-manager')"><div class="instructor-card-icon">📝</div><div class="instructor-card-title">EXAM MANAGER</div><div class="instructor-card-desc">Create timed exams with passcodes. Assign to students with pass/fail scoring.</div></div>
       </div>
     </div>
 
@@ -600,6 +715,32 @@
           <div class="category-card" style="border-color:rgba(77,136,255,0.2)" onclick="showResource('terminology')"><div class="category-icon">📖</div><div class="category-name">MED TERMINOLOGY</div><div class="category-count">Prefixes, suffixes, roots</div></div>
         </div>
         <div id="resource-content" style="margin-top:2rem;display:none"></div>
+      </div>
+    </div>
+
+
+    <div id="itool-exam-manager" style="display:none">
+      <div class="tool-container">
+        <div class="tool-header"><button class="tool-back" onclick="showInstructorTool('home')">← BACK</button><div><div class="page-title" style="color:var(--blue)">EXAM MANAGER</div><div class="page-sub">// CREATE &amp; MANAGE ASSIGNED EXAMS</div></div></div>
+        <div class="card" style="margin-bottom:1.5rem">
+          <div style="font-family:var(--display);font-size:1.1rem;letter-spacing:1px;color:var(--gold2);margin-bottom:1rem">CREATE NEW EXAM</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group" style="margin:0"><label class="form-label">EXAM NAME</label><input class="form-input" id="em-name" placeholder="e.g. Module 3 Midterm"></div>
+            <div class="form-group" style="margin:0"><label class="form-label">PASSCODE <span style="color:var(--text-dim);font-weight:400;font-family:var(--body);font-size:0.72rem;letter-spacing:0">(optional)</span></label><input class="form-input" id="em-passcode" placeholder="e.g. MOD3 (optional)" style="text-transform:uppercase;font-family:var(--mono);letter-spacing:3px" oninput="this.value=this.value.toUpperCase()"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group" style="margin:0"><label class="form-label">CATEGORY</label><select class="form-select" id="em-category"><option value="Mixed">All Categories</option><option>Airway & Breathing</option><option>Cardiology</option><option>Trauma</option><option>Medical Emergencies</option><option>Pharmacology</option><option>Patient Assessment</option><option>Operations</option><option>Medical Terminology</option></select></div>
+            <div class="form-group" style="margin:0"><label class="form-label">QUESTIONS</label><input type="number" class="form-input" id="em-count" value="20" min="5" max="100"></div>
+            <div class="form-group" style="margin:0"><label class="form-label">TIME LIMIT</label><select class="form-select" id="em-time"><option value="0">No Limit</option><option value="600">10 min</option><option value="900">15 min</option><option value="1200">20 min</option><option value="1800">30 min</option><option value="2700">45 min</option><option value="3600">60 min</option></select></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+            <div class="form-group" style="margin:0"><label class="form-label">PASSING SCORE %</label><input type="number" class="form-input" id="em-pass" value="70" min="1" max="100"></div>
+            <div class="form-group" style="margin:0"><label class="form-label">CERT LEVEL</label><select class="form-select" id="em-level"><option value="">Any</option><option>EMR</option><option>EMT</option><option>AEMT</option><option>Paramedic</option></select></div>
+          </div>
+          <button class="btn-primary" onclick="createExam()" style="font-size:1rem;padding:10px 28px">CREATE EXAM</button>
+        </div>
+        <div class="form-label" style="margin-bottom:1rem">YOUR EXAMS</div>
+        <div id="exam-list"><div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">NO EXAMS CREATED YET</div></div></div>
       </div>
     </div>
 
@@ -717,7 +858,7 @@ window.setDashNav=(page)=>{
 };
 
 window.setInstructorNav=(tool)=>{
-  ['home','lesson-planner','quiz-builder','progress','resources'].forEach(t=>{
+  ['home','lesson-planner','quiz-builder','progress','resources','exam-manager'].forEach(t=>{
     const el=document.getElementById(`inav-${t}`);
     if(el) el.classList.toggle('active', t===tool);
   });
@@ -728,6 +869,7 @@ window.showDashboardPage=(page)=>{
   const el=document.getElementById(`page-${page}`);
   if(el) el.style.display='block';
   if(page==='admin') loadAdminTab('pending');
+  if(page==='exam-prep'){ updateMissedUI(); loadPublicExams(); }
   setDashNav(page);
 };
 
@@ -735,6 +877,7 @@ window.showInstructorTool=(tool)=>{
   document.querySelectorAll('[id^="itool-"]').forEach(t=>t.style.display='none');
   document.getElementById(`itool-${tool}`).style.display='block';
   if(tool==='progress') renderProgressBars();
+  if(tool==='exam-manager') loadExamList();
   setInstructorNav(tool);
 };
 
@@ -759,14 +902,291 @@ async function loadQuestionCounts(){
 // QUIZ
 window.startQuizByCategory=async(category)=>{ await loadAllQuestions(); currentCategory=category; const approved=allQuestions.filter(q=>q.status==='approved').filter(q=>!q.certLevel||q.certLevel===currentLevel||currentLevel==='Paramedic'); quizQuestions=shuffle(category==='Mixed'?[...approved]:approved.filter(q=>q.category===category)).slice(0,20); if(quizQuestions.length===0){showToast('No questions in this category yet!','error');return;} currentQuestionIndex=0; score=0; showScreen('screen-quiz'); renderQuestion(); };
 
-function renderQuestion(){ const q=quizQuestions[currentQuestionIndex]; document.getElementById('quiz-category-tag').textContent=`// ${q.category?.toUpperCase()}`; document.getElementById('quiz-question-text').textContent=q.question; document.getElementById('quiz-score-display').textContent=score; document.getElementById('quiz-total-display').textContent=currentQuestionIndex; document.getElementById('quiz-progress').style.width=`${(currentQuestionIndex/quizQuestions.length)*100}%`; document.getElementById('quiz-next-btn').style.display='none'; document.getElementById('quiz-explanation').classList.remove('show'); document.getElementById('quiz-explanation').textContent=''; const optionsEl=document.getElementById('quiz-options'); optionsEl.innerHTML=''; ['A','B','C','D'].forEach(letter=>{ const text=q[`option${letter}`]; if(!text) return; const btn=document.createElement('button'); btn.className='quiz-option'; btn.innerHTML=`<span class="option-letter">${letter}</span>${text}`; btn.onclick=()=>selectAnswer(letter,q.correct,q.explanation); optionsEl.appendChild(btn); }); }
+function renderQuestion(){ const q=quizQuestions[currentQuestionIndex]; document.getElementById('quiz-category-tag').textContent=`// ${q.category?.toUpperCase()}`; document.getElementById('quiz-question-text').textContent=q.question; document.getElementById('quiz-score-display').textContent=score; document.getElementById('quiz-total-display').textContent=currentQuestionIndex; document.getElementById('quiz-progress').style.width=`${(currentQuestionIndex/quizQuestions.length)*100}%`; document.getElementById('quiz-next-btn').style.display='none'; document.getElementById('quiz-explanation').classList.remove('show'); document.getElementById('quiz-explanation').textContent=''; const optionsEl=document.getElementById('quiz-options'); optionsEl.innerHTML=''; ['A','B','C','D'].forEach(letter=>{ const text=q[`option${letter}`]; if(!text) return; const btn=document.createElement('button'); btn.className='quiz-option'; btn.innerHTML=`<span class="option-letter">${letter}</span>${text}`; btn.onclick=()=>selectAnswer(letter,q.correct,q.explanation,q); optionsEl.appendChild(btn); }); }
 
-window.selectAnswer=(selected,correct,explanation)=>{ document.querySelectorAll('.quiz-option').forEach(btn=>{ btn.disabled=true; const l=btn.querySelector('.option-letter').textContent; if(l===correct) btn.classList.add('correct'); else if(l===selected&&selected!==correct) btn.classList.add('wrong'); }); if(selected===correct) score++; if(explanation){const expEl=document.getElementById('quiz-explanation');expEl.textContent=`💡 ${explanation}`;expEl.classList.add('show');} document.getElementById('quiz-score-display').textContent=score; document.getElementById('quiz-next-btn').style.display='block'; };
+window.selectAnswer=(selected,correct,explanation,q)=>{ document.querySelectorAll('.quiz-option').forEach(btn=>{ btn.disabled=true; const l=btn.querySelector('.option-letter').textContent; if(l===correct) btn.classList.add('correct'); else if(l===selected&&selected!==correct) btn.classList.add('wrong'); }); if(selected===correct) score++; else if(q) addMissed(q); if(explanation){const expEl=document.getElementById('quiz-explanation');expEl.textContent=`💡 ${explanation}`;expEl.classList.add('show');} document.getElementById('quiz-score-display').textContent=score; document.getElementById('quiz-next-btn').style.display='block'; };
 
 window.nextQuestion=()=>{ currentQuestionIndex++; if(currentQuestionIndex>=quizQuestions.length) showResults(); else renderQuestion(); };
 window.restartQuiz=()=>startQuizByCategory(currentCategory);
 
-function showResults(){ const total=quizQuestions.length; const pct=Math.round((score/total)*100); const msg=pct>=90?'Outstanding! Ready for the street. 🚨':pct>=75?'Good work. Keep drilling those weak spots.':pct>=60?'Passing. Keep studying — lives depend on it.':'Keep grinding. Every rep makes you better.'; document.getElementById('results-score').textContent=`${pct}%`; document.getElementById('results-message').textContent=msg; document.getElementById('results-breakdown').innerHTML=`<div class="breakdown-row"><span>Questions</span><span>${total}</span></div><div class="breakdown-row"><span>Correct</span><span class="breakdown-correct">${score}</span></div><div class="breakdown-row"><span>Incorrect</span><span class="breakdown-wrong">${total-score}</span></div><div class="breakdown-row"><span>Category</span><span>${currentCategory}</span></div>`; showScreen('screen-results'); }
+
+// ── MISSED QUESTIONS ──────────────────────────────────────────────────────────
+function getMissed() { try { return JSON.parse(localStorage.getItem('c3s_missed')||'[]'); } catch(e){ return []; } }
+function saveMissed(list) { localStorage.setItem('c3s_missed', JSON.stringify(list)); updateMissedUI(); }
+function addMissed(q) { const m=getMissed(); if(!m.find(x=>x.id===q.id)) { m.push(q); saveMissed(m); } }
+function clearMissed() { localStorage.removeItem('c3s_missed'); updateMissedUI(); }
+function updateMissedUI() {
+  const m=getMissed(); const count=m.length;
+  const el=document.getElementById('dash-missed'); if(el) el.textContent=count;
+  const lbl=document.getElementById('missed-count-label'); if(lbl) lbl.textContent=count+' question'+(count!==1?'s':'')+' saved';
+  const btn=document.getElementById('sidebar-missed-btn'); if(btn) btn.style.display=count>0?'flex':'none';
+}
+window.startMissedQuiz=()=>{
+  const missed=getMissed();
+  if(missed.length===0){showToast('No missed questions yet — take a quiz first!','error');return;}
+  quizQuestions=shuffle([...missed]).slice(0,missed.length);
+  currentQuestionIndex=0; score=0; currentCategory='Missed (Retry)';
+  isExamMode=false;
+  showScreen('screen-quiz'); renderQuestion();
+};
+
+// ── CUSTOM QUIZ BUILDER ───────────────────────────────────────────────────────
+let selectedCats=[];
+window.toggleCatAll=()=>{
+  selectedCats=[];
+  document.querySelectorAll('.cat-check').forEach(el=>el.classList.remove('checked'));
+  document.getElementById('cc-all').classList.add('checked');
+};
+window.toggleCat=(cat,id)=>{
+  document.getElementById('cc-all').classList.remove('checked');
+  const el=document.getElementById(id);
+  if(selectedCats.includes(cat)){
+    selectedCats=selectedCats.filter(c=>c!==cat);
+    el.classList.remove('checked');
+  } else {
+    selectedCats.push(cat);
+    el.classList.add('checked');
+  }
+  if(selectedCats.length===0) toggleCatAll();
+};
+window.launchCustomQuiz=async()=>{
+  await loadAllQuestions();
+  const count=parseInt(document.getElementById('cq-count').value)||10;
+  const diff=document.getElementById('cq-difficulty').value;
+  const timedSecs=parseInt(document.getElementById('cq-timed').value)||0;
+  let pool=allQuestions.filter(q=>q.status==='approved');
+  if(selectedCats.length>0) pool=pool.filter(q=>selectedCats.includes(q.category));
+  if(diff!=='All') pool=pool.filter(q=>q.difficulty===diff);
+  if(pool.length===0){showToast('No questions match those filters','error');return;}
+  quizQuestions=shuffle([...pool]).slice(0,Math.min(count,pool.length));
+  currentQuestionIndex=0; score=0;
+  currentCategory=selectedCats.length>0?selectedCats.join(', '):'Mixed';
+  if(timedSecs>0){
+    startTimedQuiz('Custom Quiz', timedSecs, 70);
+  } else {
+    isExamMode=false;
+    showScreen('screen-quiz'); renderQuestion();
+  }
+};
+
+// ── EXAM MODE (timed) ─────────────────────────────────────────────────────────
+let isExamMode=false, examTimerInterval=null, examTimeLeft=0, examPassScore=70, examTitle='', examPasscode='';
+
+function startTimedQuiz(title, seconds, passScore) {
+  isExamMode=true; examTitle=title; examPassScore=passScore; examTimeLeft=seconds;
+  document.getElementById('exam-title-display').textContent=title.toUpperCase();
+  document.getElementById('exam-q-total').textContent=quizQuestions.length;
+  clearInterval(examTimerInterval);
+  examTimerInterval=setInterval(()=>{
+    examTimeLeft--;
+    updateExamTimer();
+    if(examTimeLeft<=0){ clearInterval(examTimerInterval); forceFinishExam(); }
+  },1000);
+  updateExamTimer();
+  showScreen('screen-exam');
+  renderExamQuestion();
+}
+
+function updateExamTimer(){
+  const m=Math.floor(examTimeLeft/60); const s=examTimeLeft%60;
+  const display=m+':'+(s<10?'0':'')+s;
+  const el=document.getElementById('exam-timer-display');
+  if(!el) return;
+  el.textContent=display;
+  el.className='exam-timer-display'+(examTimeLeft<=60?' urgent':examTimeLeft<=180?' warn':'');
+}
+
+function renderExamQuestion(){
+  if(currentQuestionIndex>=quizQuestions.length){ finishExam(); return; }
+  const q=quizQuestions[currentQuestionIndex];
+  document.getElementById('exam-q-num').textContent=currentQuestionIndex+1;
+  document.getElementById('exam-category-tag').textContent='// '+q.category?.toUpperCase();
+  document.getElementById('exam-question-text').textContent=q.question;
+  document.getElementById('exam-progress').style.width=`${(currentQuestionIndex/quizQuestions.length)*100}%`;
+  document.getElementById('exam-next-btn').style.display='none';
+  document.getElementById('exam-explanation').classList.remove('show');
+  const optionsEl=document.getElementById('exam-options');
+  optionsEl.innerHTML='';
+  ['A','B','C','D'].forEach(letter=>{
+    const text=q[`option${letter}`]; if(!text) return;
+    const btn=document.createElement('button');
+    btn.className='quiz-option';
+    btn.innerHTML=`<span class="option-letter">${letter}</span>${text}`;
+    btn.onclick=()=>selectExamAnswer(letter,q.correct,q.explanation,q);
+    optionsEl.appendChild(btn);
+  });
+}
+
+window.selectExamAnswer=(selected,correct,explanation,q)=>{
+  document.querySelectorAll('#exam-options .quiz-option').forEach(btn=>{
+    btn.disabled=true;
+    const l=btn.querySelector('.option-letter').textContent;
+    if(l===correct) btn.classList.add('correct');
+    else if(l===selected&&selected!==correct) btn.classList.add('wrong');
+  });
+  if(selected===correct){ score++; }
+  else { addMissed(q); }
+  if(explanation){ const e=document.getElementById('exam-explanation'); e.textContent='💡 '+explanation; e.classList.add('show'); }
+  document.getElementById('exam-next-btn').style.display='block';
+};
+
+window.examNextQuestion=()=>{ currentQuestionIndex++; if(currentQuestionIndex>=quizQuestions.length) finishExam(); else renderExamQuestion(); };
+
+function finishExam(){
+  clearInterval(examTimerInterval);
+  showExamResults();
+}
+function forceFinishExam(){ showToast('Time's up!','error'); showExamResults(); }
+
+function showExamResults(){
+  const total=quizQuestions.length;
+  const pct=Math.round((score/total)*100);
+  const passed=pct>=examPassScore;
+  document.getElementById('results-score').textContent=pct+'%';
+  document.getElementById('results-message').textContent=passed?'✅ PASSED — '+examTitle:'❌ FAILED — '+examTitle+' (needed '+examPassScore+'%)';
+  document.getElementById('results-breakdown').innerHTML=`
+    <div class="breakdown-row"><span>Exam</span><span>${examTitle}</span></div>
+    <div class="breakdown-row"><span>Score</span><span>${pct}%</span></div>
+    <div class="breakdown-row"><span>Correct</span><span class="breakdown-correct">${score}/${total}</span></div>
+    <div class="breakdown-row"><span>Passing Score</span><span>${examPassScore}%</span></div>
+    <div class="breakdown-row"><span>Result</span><span class="${passed?'pass-badge':'missed-badge'}">${passed?'PASS':'FAIL'}</span></div>
+  `;
+  showScreen('screen-results');
+}
+
+// ── JOIN EXAM BY PASSCODE ──────────────────────────────────────────────────────
+window.joinExam=async()=>{
+  const code=document.getElementById('exam-passcode-input').value.trim().toUpperCase();
+  if(!code){ loadPublicExams(); return; }
+  try {
+    const {getDocs,collection,query,where}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const q=query(collection(db,'exams'),where('passcode','==',code));
+    const snap=await getDocs(q);
+    if(snap.empty){ showToast('Exam not found — check the code','error'); return; }
+    const exam={id:snap.docs[0].id,...snap.docs[0].data()};
+    await loadAllQuestions();
+    let pool=allQuestions.filter(q=>q.status==='approved');
+    if(exam.category&&exam.category!=='Mixed') pool=pool.filter(q=>q.category===exam.category);
+    quizQuestions=shuffle([...pool]).slice(0,Math.min(exam.count||20,pool.length));
+    currentQuestionIndex=0; score=0; currentCategory=exam.category||'Mixed';
+    examPasscode=code;
+    if(exam.timeSecs>0){
+      startTimedQuiz(exam.name, exam.timeSecs, exam.passScore||70);
+    } else {
+      isExamMode=false;
+      examTitle=exam.name; examPassScore=exam.passScore||70;
+      showScreen('screen-quiz'); renderQuestion();
+    }
+  } catch(e){ showToast('Error loading exam','error'); console.error(e); }
+};
+
+// ── CREATE EXAM (INSTRUCTOR) ──────────────────────────────────────────────────
+window.createExam=async()=>{
+  const name=document.getElementById('em-name').value.trim();
+  const passcode=document.getElementById('em-passcode').value.trim().toUpperCase();
+  const category=document.getElementById('em-category').value;
+  const count=parseInt(document.getElementById('em-count').value)||20;
+  const timeSecs=parseInt(document.getElementById('em-time').value)||0;
+  const passScore=parseInt(document.getElementById('em-pass').value)||70;
+  const level=document.getElementById('em-level').value;
+  if(!name){ showToast('Exam name is required','error'); return; }
+  try {
+    const {addDoc,collection:col}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    await addDoc(col(db,'exams'),{name,passcode,category,count,timeSecs,passScore,level,createdAt:new Date().toISOString()});
+    showToast('Exam created! Passcode: '+passcode,'success');
+    document.getElementById('em-name').value='';
+    document.getElementById('em-passcode').value='';
+    loadExamList();
+  } catch(e){ showToast('Error creating exam','error'); console.error(e); }
+};
+
+
+window.loadPublicExams=async()=>{
+  const listEl=document.getElementById('public-exam-list');
+  if(!listEl) return;
+  listEl.innerHTML='<div class="loading"><div class="spinner"></div>LOADING EXAMS...</div>';
+  try {
+    const {getDocs,collection}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const snap=await getDocs(collection(db,'exams'));
+    if(snap.empty){
+      listEl.innerHTML='<div style="font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);padding:1rem 0;letter-spacing:1px">NO EXAMS AVAILABLE YET</div>';
+      return;
+    }
+    listEl.innerHTML='<div class="form-label" style="margin-bottom:0.75rem">AVAILABLE EXAMS</div>' +
+      snap.docs.map(d=>{
+        const e=d.data();
+        const mins=e.timeSecs>0?Math.round(e.timeSecs/60)+' min':'No limit';
+        return `<div class="exam-card" style="cursor:pointer" onclick="launchExamById('${d.id}')">
+          <div class="exam-card-header">
+            <div class="exam-name">${e.name}</div>
+            <span class="exam-timer-badge">⏱ ${mins}</span>
+          </div>
+          <div class="exam-meta">${e.category||'Mixed'} · ${e.count||20} questions · Pass: ${e.passScore||70}%</div>
+          <div style="margin-top:0.75rem"><button class="btn-primary" style="font-size:0.8rem;padding:6px 18px">TAKE EXAM →</button></div>
+        </div>`;
+      }).join('');
+  } catch(e){ listEl.innerHTML=''; showToast('Error loading exams','error'); }
+};
+
+window.launchExamById=async(examId)=>{
+  try {
+    const {getDoc,doc:fiDoc}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const snap=await getDoc(fiDoc(db,'exams',examId));
+    if(!snap.exists()){ showToast('Exam not found','error'); return; }
+    const exam={id:snap.id,...snap.data()};
+    await loadAllQuestions();
+    let pool=allQuestions.filter(q=>q.status==='approved');
+    if(exam.category&&exam.category!=='Mixed') pool=pool.filter(q=>q.category===exam.category);
+    quizQuestions=shuffle([...pool]).slice(0,Math.min(exam.count||20,pool.length));
+    currentQuestionIndex=0; score=0; currentCategory=exam.category||'Mixed';
+    examPasscode=exam.passcode||'';
+    if(exam.timeSecs>0){
+      startTimedQuiz(exam.name, exam.timeSecs, exam.passScore||70);
+    } else {
+      isExamMode=true; examTitle=exam.name; examPassScore=exam.passScore||70;
+      showScreen('screen-quiz'); renderQuestion();
+    }
+  } catch(e){ showToast('Error loading exam','error'); console.error(e); }
+};
+
+window.loadExamList=async()=>{
+  const listEl=document.getElementById('exam-list'); if(!listEl) return;
+  try {
+    const {getDocs,collection:col}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const snap=await getDocs(col(db,'exams'));
+    if(snap.empty){ listEl.innerHTML='<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">NO EXAMS YET</div></div>'; return; }
+    listEl.innerHTML=snap.docs.map(d=>{
+      const e=d.data();
+      const mins=e.timeSecs>0?Math.round(e.timeSecs/60)+'min':'No limit';
+      return `<div class="exam-card"><div class="exam-card-header"><div class="exam-name">${e.name}</div><span class="exam-passcode">${e.passcode}</span></div><div class="exam-meta">${e.category} · ${e.count} questions · Pass: ${e.passScore}%</div><div style="margin-top:0.5rem;display:flex;gap:0.5rem;align-items:center"><span class="exam-timer-badge">⏱ ${mins}</span><button class="btn-delete" onclick="deleteExam('${d.id}')">DELETE</button></div></div>`;
+    }).join('');
+  } catch(e){ console.error(e); }
+};
+
+window.deleteExam=async(id)=>{
+  if(!confirm('Delete this exam?')) return;
+  try {
+    const {deleteDoc,doc:fiDoc}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    await deleteDoc(fiDoc(db,'exams',id));
+    showToast('Exam deleted','success'); loadExamList();
+  } catch(e){ showToast('Error','error'); }
+};
+
+// ── UPDATE SHOW RESULTS to handle missed + exam mode ──────────────────────────
+
+function showResults(){
+  if(isExamMode){ showExamResults(); return; }
+  const total=quizQuestions.length; const pct=Math.round((score/total)*100);
+  const msg=pct>=90?'Outstanding! Ready for the street. 🚨':pct>=75?'Good work. Keep drilling those weak spots.':pct>=60?'Passing. Keep studying — lives depend on it.':'Keep grinding. Every rep makes you better.';
+  document.getElementById('results-score').textContent=`${pct}%`;
+  document.getElementById('results-message').textContent=msg;
+  document.getElementById('results-breakdown').innerHTML=`<div class="breakdown-row"><span>Questions</span><span>${total}</span></div><div class="breakdown-row"><span>Correct</span><span class="breakdown-correct">${score}</span></div><div class="breakdown-row"><span>Incorrect</span><span class="breakdown-wrong">${total-score}</span></div><div class="breakdown-row"><span>Category</span><span>${currentCategory}</span></div>`;
+  const missed=getMissed(); const missedBtn=document.getElementById('retry-missed-btn');
+  const banner=document.getElementById('results-missed-banner');
+  if(missed.length>0&&missedBtn){ missedBtn.style.display='inline-block'; if(banner){ banner.style.display='block'; banner.textContent='🔁 You have '+missed.length+' missed question'+(missed.length!==1?'s':'')+' saved — hit Retry Missed to drill them.'; } }
+  else { if(missedBtn) missedBtn.style.display='none'; if(banner) banner.style.display='none'; }
+  showScreen('screen-results');
+}
 
 // SUBMIT
 window.submitQuestion=async()=>{ const category=document.getElementById('submit-category').value; const question=document.getElementById('submit-question').value.trim(); const optA=document.getElementById('opt-a').value.trim(); const optB=document.getElementById('opt-b').value.trim(); const optC=document.getElementById('opt-c').value.trim(); const optD=document.getElementById('opt-d').value.trim(); const correct=document.getElementById('submit-correct').value; if(!category||!question||!optA||!optB||!optC||!optD||!correct){showToast('Fill in all required fields','error');return;} try{ await addDoc(collection(db,'questions'),{category,question,optionA:optA,optionB:optB,optionC:optC,optionD:optD,correct,explanation:document.getElementById('submit-explanation').value.trim(),difficulty:document.getElementById('submit-difficulty').value,status:'pending',submittedAt:new Date().toISOString()}); showToast('Question submitted for review!','success'); ['submit-category','submit-question','opt-a','opt-b','opt-c','opt-d','submit-correct','submit-explanation'].forEach(id=>document.getElementById(id).value=''); }catch(e){showToast('Error submitting','error');} };
@@ -820,6 +1240,7 @@ window.showToast=(msg,type='')=>{ const t=document.getElementById('toast'); t.te
 // INIT
 seedStarterQuestions();
 loadQuestionCounts();
+updateMissedUI();
 </script>
 </body>
 </html>
