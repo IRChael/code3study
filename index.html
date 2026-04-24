@@ -23,8 +23,8 @@
     pointer-events: none; z-index: 9999; }
 
   /* STROBE */
-  .strobe-container { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 10000; pointer-events: none; display: flex; }
-  .strobe-bar { flex: 1; height: 100%; opacity: 0; }
+  .strobe-container { position: absolute; top: 0; left: 0; right: 0; height: 6px; z-index: 200; pointer-events: none; display: flex; overflow: hidden; }
+  .strobe-bar { flex: 1; height: 100%; opacity: 0; font-size: 0; line-height: 0; }
   .s-red { background: #ff2d55; } .s-blue { background: #4d88ff; } .s-white { background: #ffffff; } .s-orange { background: #ff8c00; }
 
   /* BLOOM - ambient light reflections on dashboard */
@@ -296,16 +296,8 @@
 </head>
 <body>
 
-<div class="strobe-container" id="strobe">
-  <div class="strobe-bar s-red" id="s1"></div>
-  <div class="strobe-bar s-blue" id="s2"></div>
-  <div class="strobe-bar s-red" id="s3"></div>
-  <div class="strobe-bar s-blue" id="s4"></div>
-  <div class="strobe-bar s-white" id="s5"></div>
-  <div class="strobe-bar s-red" id="s6"></div>
-  <div class="strobe-bar s-blue" id="s7"></div>
-  <div class="strobe-bar s-orange" id="s8"></div>
-</div>
+
+
 
 <div class="toast" id="toast"></div>
 
@@ -313,6 +305,16 @@
 <div class="screen active" id="screen-landing">
   <div class="bloom-red"></div>
   <div class="bloom-blue"></div>
+  <div class="strobe-container" id="strobe">
+    <div class="strobe-bar s-red"></div>
+    <div class="strobe-bar s-blue"></div>
+    <div class="strobe-bar s-red"></div>
+    <div class="strobe-bar s-blue"></div>
+    <div class="strobe-bar s-white"></div>
+    <div class="strobe-bar s-red"></div>
+    <div class="strobe-bar s-blue"></div>
+    <div class="strobe-bar s-orange"></div>
+  </div>
   <div class="landing-content">
 
     <div class="emblem-wrap">
