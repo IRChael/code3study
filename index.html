@@ -20,7 +20,7 @@
   body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
     repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.01) 4px, rgba(0,0,0,0.01) 5px);
-    pointer-events: none; z-index: 9999; }
+    pointer-events: none; z-index: 0; }
 
 
   /* CUSTOM QUIZ BUILDER */
@@ -97,17 +97,17 @@
   }
   /* Gold vignette glow */
   #screen-landing::before {
-    content: ''; position: absolute; inset: 0; pointer-events: none;
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background: radial-gradient(ellipse at 50% 50%, rgba(200,151,58,0.07) 0%, rgba(200,151,58,0.02) 40%, transparent 70%);
   }
   /* Cracked lines overlay via SVG */
   #screen-landing::after {
-    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0.18;
+    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0.18; z-index: 0;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cg stroke='%23a0a090' stroke-width='0.5' fill='none' opacity='0.6'%3E%3Cpath d='M120 40 L135 80 L128 110 L145 150 L140 200'/%3E%3Cpath d='M135 80 L160 95 L155 120'/%3E%3Cpath d='M128 110 L108 130 L115 160 L100 185'/%3E%3Cpath d='M450 20 L440 60 L455 100 L448 140 L460 180 L445 230'/%3E%3Cpath d='M455 100 L475 115 L470 145'/%3E%3Cpath d='M448 140 L428 155 L435 185'/%3E%3Cpath d='M30 300 L70 290 L110 305 L150 295 L200 310'/%3E%3Cpath d='M110 305 L115 330 L100 355'/%3E%3Cpath d='M300 50 L310 90 L295 130 L315 165'/%3E%3Cpath d='M310 90 L335 100 L330 128'/%3E%3Cpath d='M500 280 L520 310 L510 345 L530 375 L515 420'/%3E%3Cpath d='M510 345 L490 360 L495 395'/%3E%3Cpath d='M50 450 L85 440 L120 460 L115 495 L140 520'/%3E%3Cpath d='M120 460 L125 488 L108 510'/%3E%3Cpath d='M380 400 L395 435 L385 470 L400 510 L390 550'/%3E%3Cpath d='M395 435 L418 445 L412 475'/%3E%3Cpath d='M200 480 L220 510 L210 545 L230 570'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 600px 600px;
   }
 
-  .landing-content { text-align: center; z-index: 1; padding: 2rem; animation: fadeInUp 0.8s ease forwards; position: relative; }
+  .landing-content { text-align: center; z-index: 10; padding: 2rem; animation: fadeInUp 0.8s ease forwards; position: relative; }
 
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
