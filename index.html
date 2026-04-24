@@ -23,6 +23,11 @@
     pointer-events: none; z-index: 9999; }
 
   /* STROBE - bloom flashes only, no bars */
+  /* CERT LEVEL SELECTOR */
+  .cert-selector { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+  .cert-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; padding: 6px 16px; cursor: pointer; border-radius: 3px; transition: all 0.2s; }
+  .cert-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .cert-btn.selected { background: rgba(200,151,58,0.15); border-color: var(--gold); color: var(--gold2); }
 
   /* BLOOM - JS-controlled light flashes on landing only */
   .bloom-red {
@@ -107,8 +112,10 @@
 
   /* NAV */
   .nav { display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 46px; border-bottom: 1px solid rgba(200,151,58,0.15); background: rgba(8,12,10,0.98); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-  .nav-logo { font-family: var(--display); font-size: 1.1rem; letter-spacing: 2px; background: linear-gradient(135deg, var(--gold3), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; cursor: pointer; }
-  .nav-logo:hover { opacity: 0.75; }
+  .nav-logo { font-family: var(--display); font-size: 1.1rem; letter-spacing: 2px; color: var(--gold2); cursor: pointer; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .nav-logo:hover { color: var(--gold3); }
+  .nav-logo .home-icon { font-size: 0.75rem; opacity: 0.7; }
+  .nav-home-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 2px; color: var(--text-dim); border-left: 1px solid var(--border); padding-left: 8px; }
   .nav-links { display: flex; gap: 0; align-items: center; }
   .nav-btn { background: transparent; border: none; color: var(--text-dim); font-family: var(--body); font-size: 0.8rem; padding: 4px 12px; cursor: pointer; transition: color 0.15s; border-radius: 4px; line-height: 46px; height: 46px; }
   .nav-btn:hover { color: var(--gold2); }
@@ -300,6 +307,12 @@
     <div class="logo-divider"></div>
     <div class="logo-sub">LIGHTS &amp; SIRENS LEARNING</div>
     <div class="logo-tagline-text">Training the Future of Life-Saving Care</div>
+    <div class="cert-selector">
+      <button class="cert-btn selected" id="cert-emr" onclick="setCert('EMR')">EMR</button>
+      <button class="cert-btn" id="cert-emt" onclick="setCert('EMT')">EMT</button>
+      <button class="cert-btn" id="cert-aemt" onclick="setCert('AEMT')">AEMT</button>
+      <button class="cert-btn" id="cert-paramedic" onclick="setCert('Paramedic')">PARAMEDIC</button>
+    </div>
     <div class="landing-buttons">
       <button class="btn-primary" onclick="showScreen('screen-dashboard')">START STUDYING</button>
       <button class="btn-instructor" onclick="showScreen('screen-instructor-login')">INSTRUCTOR PORTAL</button>
@@ -338,7 +351,7 @@
 <!-- STUDENT DASHBOARD -->
 <div class="screen" id="screen-dashboard">
   <nav class="nav">
-    <div class="nav-logo" onclick="showScreen('screen-landing')" title="Back to home">C3S</div>
+    <div class="nav-logo" onclick="showScreen('screen-landing')">🏠 <span>C3S</span></div>
     <div class="nav-links">
       <button class="nav-btn" id="dash-nav-home" onclick="setDashNav('home');showDashboardPage('home')">Home</button>
       <button class="nav-btn" id="dash-nav-quiz" onclick="setDashNav('quiz-select');showDashboardPage('quiz-select')">Quiz</button>
@@ -369,7 +382,7 @@
     <div class="main-content" id="main-content">
 
       <div id="page-home">
-        <div class="page-header"><div class="page-title">DASHBOARD</div><div class="page-sub">// READY FOR DISPATCH</div></div>
+        <div class="page-header"><div class="page-title">DASHBOARD</div><div class="page-sub" id="dash-level-label">// READY FOR DISPATCH</div></div>
         <div class="cards-grid">
           <div class="stat-card"><div class="stat-card-num" id="dash-total">—</div><div class="stat-card-label">QUESTIONS</div></div>
           <div class="stat-card green"><div class="stat-card-num" id="dash-categories">9</div><div class="stat-card-label">CATEGORIES</div></div>
@@ -413,6 +426,7 @@
           <div class="form-group"><label class="form-label">CORRECT ANSWER</label><select class="form-select" id="submit-correct"><option value="">Select...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
           <div class="form-group"><label class="form-label">EXPLANATION (optional)</label><textarea class="form-textarea" id="submit-explanation" placeholder="Why is this correct?"></textarea></div>
           <div class="form-group"><label class="form-label">DIFFICULTY</label><select class="form-select" id="submit-difficulty"><option value="EMT-Basic">EMT-Basic</option><option value="EMT-Advanced">EMT-Advanced</option></select></div>
+          <div class="form-group"><label class="form-label">CERTIFICATION LEVEL</label><select class="form-select" id="submit-certlevel"><option value="EMR">EMR</option><option value="EMT">EMT</option><option value="AEMT">AEMT</option><option value="Paramedic">Paramedic</option></select></div>
           <button class="btn-primary" onclick="submitQuestion()">SUBMIT FOR REVIEW</button>
         </div>
       </div>
@@ -479,8 +493,7 @@
 <div class="screen" id="screen-classroom">
   <nav class="nav" style="justify-content:space-between">
     <div style="display:flex;align-items:center;gap:1rem">
-      <div class="nav-logo" onclick="showScreen('screen-landing')" title="Home">C3S</div>
-      <span style="color:var(--text-dim);font-family:var(--mono);font-size:0.7rem;letter-spacing:2px">// CLASSROOM</span>
+      <div class="nav-logo" onclick="showScreen('screen-landing')">🏠 C3S</div><span class="nav-home-label">CLASSROOM</span>
     </div>
     <div style="display:flex;gap:1rem;align-items:center">
       <div class="score-badge">Q <span id="classroom-q-num">1</span> / <span id="classroom-q-total">—</span></div>
@@ -501,8 +514,7 @@
 <div class="screen" id="screen-instructor">
   <nav class="nav">
     <div style="display:flex;align-items:center;gap:1rem">
-      <div class="nav-logo" onclick="showScreen('screen-landing')" title="Home">C3S</div>
-      <span style="color:rgba(77,154,255,0.6);font-family:var(--mono);font-size:0.7rem;letter-spacing:2px">// INSTRUCTOR</span>
+      <div class="nav-logo" onclick="showScreen('screen-landing')">🏠 C3S</div><span class="nav-home-label">INSTRUCTOR</span>
     </div>
     <div class="nav-links">
       <button class="nav-btn" id="inav-home" onclick="setInstructorNav('home');showInstructorTool('home')">Dashboard</button>
@@ -603,6 +615,13 @@ const firebaseConfig = { apiKey:"AIzaSyDzV08yZuFSgmBYQyyMKXtl925Wqzp7nfg", authD
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// CERT LEVEL
+window.setCert=(level)=>{
+  currentLevel = level;
+  document.querySelectorAll('.cert-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('cert-'+level.toLowerCase()).classList.add('selected');
+};
+
 // BLOOM STROBE - landing page only, drives bloom divs
 const bloomRed = document.querySelector('.bloom-red');
 const bloomBlue = document.querySelector('.bloom-blue');
@@ -626,7 +645,7 @@ function runStrobe() {
 runStrobe();
 
 // STATE
-let allQuestions=[], quizQuestions=[], currentQuestionIndex=0, score=0, currentCategory='Mixed';
+let allQuestions=[], quizQuestions=[], currentQuestionIndex=0, score=0, currentCategory='Mixed', currentLevel='EMR';
 let classroomTimer=null, classroomTimeLeft=30, classroomIndex=0, builtQuiz=[], lessonBlocks=[], students=[];
 const ADMIN_PASSWORD='code3admin', INSTRUCTOR_PASSWORD='instructor2025';
 
@@ -680,7 +699,13 @@ async function seedStarterQuestions() {
 window.showScreen=(id)=>{
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if(id==='screen-dashboard'){ loadQuestionCounts(); setDashNav('home'); showDashboardPage('home'); }
+  if(id==='screen-dashboard'){
+    loadQuestionCounts();
+    setDashNav('home');
+    showDashboardPage('home');
+    const lbl = document.getElementById('dash-level-label');
+    if(lbl) lbl.textContent = '// ' + currentLevel + ' — READY FOR DISPATCH';
+  }
   if(id==='screen-instructor'){ renderProgressBars(); setInstructorNav('home'); }
 };
 
@@ -732,7 +757,7 @@ async function loadQuestionCounts(){
 }
 
 // QUIZ
-window.startQuizByCategory=async(category)=>{ await loadAllQuestions(); currentCategory=category; const approved=allQuestions.filter(q=>q.status==='approved'); quizQuestions=shuffle(category==='Mixed'?[...approved]:approved.filter(q=>q.category===category)).slice(0,20); if(quizQuestions.length===0){showToast('No questions in this category yet!','error');return;} currentQuestionIndex=0; score=0; showScreen('screen-quiz'); renderQuestion(); };
+window.startQuizByCategory=async(category)=>{ await loadAllQuestions(); currentCategory=category; const approved=allQuestions.filter(q=>q.status==='approved').filter(q=>!q.certLevel||q.certLevel===currentLevel||currentLevel==='Paramedic'); quizQuestions=shuffle(category==='Mixed'?[...approved]:approved.filter(q=>q.category===category)).slice(0,20); if(quizQuestions.length===0){showToast('No questions in this category yet!','error');return;} currentQuestionIndex=0; score=0; showScreen('screen-quiz'); renderQuestion(); };
 
 function renderQuestion(){ const q=quizQuestions[currentQuestionIndex]; document.getElementById('quiz-category-tag').textContent=`// ${q.category?.toUpperCase()}`; document.getElementById('quiz-question-text').textContent=q.question; document.getElementById('quiz-score-display').textContent=score; document.getElementById('quiz-total-display').textContent=currentQuestionIndex; document.getElementById('quiz-progress').style.width=`${(currentQuestionIndex/quizQuestions.length)*100}%`; document.getElementById('quiz-next-btn').style.display='none'; document.getElementById('quiz-explanation').classList.remove('show'); document.getElementById('quiz-explanation').textContent=''; const optionsEl=document.getElementById('quiz-options'); optionsEl.innerHTML=''; ['A','B','C','D'].forEach(letter=>{ const text=q[`option${letter}`]; if(!text) return; const btn=document.createElement('button'); btn.className='quiz-option'; btn.innerHTML=`<span class="option-letter">${letter}</span>${text}`; btn.onclick=()=>selectAnswer(letter,q.correct,q.explanation); optionsEl.appendChild(btn); }); }
 
