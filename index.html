@@ -59,6 +59,20 @@
   .passcode-title { font-family: var(--display); font-size: 1.8rem; letter-spacing: 2px; color: var(--blue); margin-bottom: 0.25rem; }
   .passcode-sub { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 1.5rem; }
 
+
+  /* FLAG SYSTEM */
+  .flag-btn { background: transparent; border: 1px solid rgba(255,140,0,0.4); color: var(--accent2); font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; padding: 4px 10px; cursor: pointer; border-radius: 4px; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+  .flag-btn:hover { background: rgba(255,140,0,0.1); border-color: var(--accent2); }
+  .flag-btn.flagged { background: rgba(255,140,0,0.15); border-color: var(--accent2); color: var(--accent2); }
+  .flag-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .flag-modal-box { background: var(--surface); border: 1px solid var(--accent2); border-radius: 10px; padding: 2rem; width: 100%; max-width: 480px; animation: fadeInUp 0.2s ease; }
+  .flag-modal-title { font-family: var(--display); font-size: 1.4rem; letter-spacing: 2px; color: var(--accent2); margin-bottom: 0.25rem; }
+  .flag-modal-sub { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 1.5rem; }
+  .flag-reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.25rem; }
+  .flag-reason-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; padding: 8px 10px; cursor: pointer; border-radius: 5px; transition: all 0.15s; text-align: center; }
+  .flag-reason-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .flag-reason-btn.selected { background: rgba(255,140,0,0.15); border-color: var(--accent2); color: var(--accent2); }
+  .flag-count-badge { background: rgba(255,140,0,0.15); border: 1px solid var(--accent2); color: var(--accent2); font-family: var(--mono); font-size: 0.6rem; letter-spacing: 1px; padding: 2px 8px; border-radius: 3px; }
   /* STROBE - bloom flashes only, no bars */
   /* CERT LEVEL SELECTOR */
   .cert-selector { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
@@ -478,6 +492,7 @@
         <div class="tabs">
           <button class="tab active" id="tab-pending" onclick="loadAdminTab('pending')">PENDING</button>
           <button class="tab" id="tab-approved" onclick="loadAdminTab('approved')">APPROVED</button>
+          <button class="tab" id="tab-flags" onclick="loadFlagTab()">🚩 FLAGS <span id="flag-count-badge" class="flag-count-badge" style="display:none">0</span></button>
           <button class="tab" onclick="showDashboardPage('add-question')">+ ADD QUESTION</button>
         </div>
         <div id="admin-list"><div class="loading"><div class="spinner"></div>LOADING...</div></div>
@@ -582,7 +597,10 @@
     <div class="quiz-question" id="quiz-question-text"></div>
     <div class="quiz-options" id="quiz-options"></div>
     <div class="explanation" id="quiz-explanation"></div>
-    <div class="quiz-footer"><div></div><button class="btn-primary" id="quiz-next-btn" onclick="nextQuestion()" style="display:none">NEXT →</button></div>
+    <div class="quiz-footer">
+      <button class="flag-btn" id="quiz-flag-btn" onclick="openFlagModal()" title="Flag this question">🚩 FLAG</button>
+      <button class="btn-primary" id="quiz-next-btn" onclick="nextQuestion()" style="display:none">NEXT →</button>
+    </div>
   </div>
 </div>
 
@@ -793,14 +811,14 @@ const ADMIN_PASSWORD='code3admin', INSTRUCTOR_PASSWORD='instructor2025';
 // STARTER QUESTIONS
 const starterQs=[
 {category:"Airway & Breathing",question:"What is the correct rate for rescue breathing in an adult with a pulse?",optionA:"One breath every 2-3 seconds",optionB:"One breath every 5-6 seconds",optionC:"One breath every 10 seconds",optionD:"Two breaths every 5 seconds",correct:"B",explanation:"For an adult with a pulse, deliver one breath every 5-6 seconds (10-12 breaths/min).",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
-{category:"Airway & Breathing",question:"What size OPA should be used for an adult patient?",optionA:"Measured from center of mouth to earlobe",optionB:"Measured from corner of mouth to earlobe",optionC:"Measured from nose tip to earlobe",optionD:"One size fits all adults",correct:"B",explanation:"OPA size is measured from the corner of the mouth to the earlobe.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
+{category:"Airway & Breathing",question:"What size OPA should be used for an adult patient?",optionA:"Measured from center of mouth to earlobe",optionB:"Measured from corner of mouth to earlobe",optionC:"Measured from nose tip to earlobe",optionD:"One size fits all adults",correct:"B",explanation:"OPA size is measured from the corner of the mouth to the earlobe.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Airway & Breathing",question:"Which position is best for a conscious patient with respiratory distress?",optionA:"Supine",optionB:"Prone",optionC:"Fowlers (sitting up)",optionD:"Left lateral recumbent",correct:"C",explanation:"Fowlers position allows maximum lung expansion and reduces work of breathing.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
-{category:"Airway & Breathing",question:"What is the tidal volume for BVM ventilation in adults?",optionA:"200-300 mL",optionB:"400-600 mL",optionC:"800-1000 mL",optionD:"1200-1500 mL",correct:"B",explanation:"Tidal volume should be 400-600 mL \u2014 just enough to see chest rise.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
+{category:"Airway & Breathing",question:"What is the tidal volume for BVM ventilation in adults?",optionA:"200-300 mL",optionB:"400-600 mL",optionC:"800-1000 mL",optionD:"1200-1500 mL",correct:"B",explanation:"Tidal volume should be 400-600 mL \u2014 just enough to see chest rise.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Airway & Breathing",question:"A patient is unresponsive and not breathing. Your first airway maneuver should be:",optionA:"Insert an OPA immediately",optionB:"Head-tilt chin-lift",optionC:"Jaw-thrust maneuver",optionD:"Suction the airway",correct:"B",explanation:"Head-tilt chin-lift is the first manual airway maneuver for an unresponsive patient without suspected spinal injury.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Airway & Breathing",question:"In a patient with suspected cervical spine injury, which airway maneuver is preferred?",optionA:"Head-tilt chin-lift",optionB:"Jaw-thrust maneuver",optionC:"Triple airway maneuver",optionD:"Neck extension",correct:"B",explanation:"Jaw-thrust maneuver opens the airway without extending the neck, minimizing risk of further spinal injury.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Airway & Breathing",question:"Snoring respirations in an unconscious patient most likely indicate:",optionA:"Pulmonary edema",optionB:"Partial upper airway obstruction",optionC:"Bronchospasm",optionD:"Pneumothorax",correct:"B",explanation:"Snoring sounds indicate partial upper airway obstruction, usually by the tongue. Reposition the airway.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Airway & Breathing",question:"When is a nasopharyngeal airway (NPA) preferred over an OPA?",optionA:"When the patient has no gag reflex",optionB:"When the patient has a gag reflex or trismus",optionC:"In pediatric patients only",optionD:"When intubation has failed",correct:"B",explanation:"NPAs are better tolerated in semi-conscious patients with an intact gag reflex or clenched jaw (trismus).",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
-{category:"Airway & Breathing",question:"SpO2 of 88% on room air in a patient with no prior lung disease indicates:",optionA:"Normal saturation",optionB:"Mild hypoxemia",optionC:"Significant hypoxemia requiring oxygen therapy",optionD:"Critical hypoxemia requiring intubation",correct:"C",explanation:"Normal SpO2 is 94-99%. A reading of 88% indicates significant hypoxemia requiring supplemental oxygen.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
+{category:"Airway & Breathing",question:"SpO2 of 88% on room air in a patient with no prior lung disease indicates:",optionA:"Normal saturation",optionB:"Mild hypoxemia",optionC:"Significant hypoxemia requiring oxygen therapy",optionD:"Critical hypoxemia requiring intubation",correct:"C",explanation:"Normal SpO2 is 94-99%. A reading of 88% indicates significant hypoxemia requiring supplemental oxygen.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Airway & Breathing",question:"What flow rate does a non-rebreather mask require?",optionA:"2-4 L/min",optionB:"6-8 L/min",optionC:"10-15 L/min",optionD:"20+ L/min",correct:"C",explanation:"A non-rebreather mask requires 10-15 L/min to keep the reservoir bag inflated and deliver ~90% O2.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Airway & Breathing",question:"Kussmaul respirations are characterized by:",optionA:"Slow, shallow breaths",optionB:"Deep, rapid breaths",optionC:"Alternating fast and slow cycles",optionD:"Gasping with prolonged pauses",correct:"B",explanation:"Kussmaul respirations are deep, rapid, labored breaths \u2014 classically seen in DKA.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Airway & Breathing",question:"Cheyne-Stokes respirations are characterized by:",optionA:"Constant deep rapid breathing",optionB:"Gradual increase then decrease in depth with periods of apnea",optionC:"Slow, irregular, gasping breaths",optionD:"Rapid shallow breathing only",correct:"B",explanation:"Cheyne-Stokes cycles through increasing then decreasing depth with brief apnea \u2014 seen in brain injury or CHF.",difficulty:"EMT-Advanced",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
@@ -814,12 +832,12 @@ const starterQs=[
 {category:"Cardiology",question:"Target compression depth for adult CPR:",optionA:"1-1.5 inches",optionB:"1.5-2 inches",optionC:"At least 2 inches",optionD:"At least 3 inches",correct:"C",explanation:"AHA 2020: compress at least 2 inches (5 cm), no more than 2.4 inches.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Cardiology",question:"Most common initial rhythm in witnessed cardiac arrest:",optionA:"Asystole",optionB:"PEA",optionC:"Ventricular fibrillation",optionD:"Ventricular tachycardia",correct:"C",explanation:"VF is the most common initial rhythm in witnessed sudden cardiac arrest.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Cardiology",question:"Recommended adult CPR compression rate:",optionA:"60-80/min",optionB:"80-100/min",optionC:"100-120/min",optionD:"120-140/min",correct:"C",explanation:"AHA 2020 recommends 100-120 compressions per minute.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
-{category:"Cardiology",question:"The P wave on an ECG represents:",optionA:"Ventricular depolarization",optionB:"Atrial depolarization",optionC:"Ventricular repolarization",optionD:"Atrial repolarization",correct:"B",explanation:"The P wave represents atrial depolarization.",difficulty:"EMT-Advanced",certLevels:["AEMT", "Paramedic"],status:'approved'},
+{category:"Cardiology",question:"The P wave on an ECG represents:",optionA:"Ventricular depolarization",optionB:"Atrial depolarization",optionC:"Ventricular repolarization",optionD:"Atrial repolarization",correct:"B",explanation:"The P wave represents atrial depolarization.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
 {category:"Cardiology",question:"Priority for a patient with chest pain, diaphoresis, and nausea:",optionA:"12-lead ECG and aspirin",optionB:"IV access only",optionC:"Nitroglycerin administration",optionD:"Oxygen via NRB only",correct:"A",explanation:"Suspected ACS: 12-lead ECG within 10 minutes and aspirin if not allergic.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Cardiology",question:"ST elevation in II, III, and aVF suggests occlusion of:",optionA:"Left anterior descending (LAD)",optionB:"Left circumflex",optionC:"Right coronary artery (RCA)",optionD:"Left main coronary artery",correct:"C",explanation:"Inferior STEMI (II, III, aVF) = RCA occlusion most commonly.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
 {category:"Cardiology",question:"Regular narrow complex tachycardia at 180 bpm in a stable patient is most likely:",optionA:"Ventricular tachycardia",optionB:"SVT",optionC:"Atrial fibrillation",optionD:"Third-degree AV block",correct:"B",explanation:"Regular narrow complex tachycardia at 150-250 bpm in a stable patient is most likely SVT.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
 {category:"Cardiology",question:"Adenosine 6 mg IV fails to convert SVT. Next step:",optionA:"Repeat 6 mg",optionB:"Give 12 mg",optionC:"Cardiovert immediately",optionD:"Give amiodarone",correct:"B",explanation:"If first 6 mg adenosine fails, give 12 mg.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
-{category:"Cardiology",question:"Which rhythm requires immediate defibrillation?",optionA:"Asystole",optionB:"PEA",optionC:"Sinus tachycardia",optionD:"Ventricular fibrillation",correct:"D",explanation:"VF and pulseless VT are the only rhythms that respond to defibrillation.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
+{category:"Cardiology",question:"Which rhythm requires immediate defibrillation?",optionA:"Asystole",optionB:"PEA",optionC:"Sinus tachycardia",optionD:"Ventricular fibrillation",correct:"D",explanation:"VF and pulseless VT are the only rhythms that respond to defibrillation.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Cardiology",question:"Complete heart block with HR 30 and hypotension is treated with:",optionA:"Adenosine 6 mg IV",optionB:"Atropine 0.5 mg IV",optionC:"Transcutaneous pacing",optionD:"Cardioversion",correct:"C",explanation:"Complete heart block with hemodynamic compromise = transcutaneous pacing.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
 {category:"Cardiology",question:"Signs of right-sided heart failure:",optionA:"Pulmonary edema and pink frothy sputum",optionB:"JVD, peripheral edema, hepatomegaly",optionC:"Hypertension and tachycardia only",optionD:"Bilateral crackles and orthopnea",correct:"B",explanation:"Right heart failure causes JVD, peripheral edema, and hepatomegaly.",difficulty:"EMT-Advanced",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Cardiology",question:"Pulsus paradoxus >10 mmHg is classic for:",optionA:"Myocardial infarction",optionB:"Cardiac tamponade",optionC:"Aortic dissection",optionD:"Pulmonary embolism",correct:"B",explanation:">10 mmHg SBP drop on inspiration = hallmark of cardiac tamponade.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
@@ -830,7 +848,7 @@ const starterQs=[
 {category:"Trauma",question:"GCS maximum score:",optionA:"10",optionB:"12",optionC:"15",optionD:"18",correct:"C",explanation:"GCS max = 15: Eyes (4) + Verbal (5) + Motor (6).",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Trauma",question:"Signs of tension pneumothorax include all EXCEPT:",optionA:"Absent breath sounds on affected side",optionB:"Tracheal deviation away from affected side",optionC:"Bradycardia",optionD:"JVD",correct:"C",explanation:"Tension PTX causes tachycardia, not bradycardia, due to obstructive shock.",difficulty:"EMT-Advanced",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Trauma",question:"An impaled object in the chest should be:",optionA:"Removed immediately",optionB:"Stabilized in place with bulky dressings",optionC:"Pushed through to the other side",optionD:"Covered and ignored",correct:"B",explanation:"Impaled objects are stabilized in place. Removal causes massive hemorrhage.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
-{category:"Trauma",question:"An open chest wound should be treated with:",optionA:"Gauze taped on all four sides",optionB:"A vented chest seal or 3-sided dressing",optionC:"A fully occlusive dressing",optionD:"No dressing",correct:"B",explanation:"Vented (3-sided) seal allows air to escape on exhalation, preventing tension pneumothorax.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
+{category:"Trauma",question:"An open chest wound should be treated with:",optionA:"Gauze taped on all four sides",optionB:"A vented chest seal or 3-sided dressing",optionC:"A fully occlusive dressing",optionD:"No dressing",correct:"B",explanation:"Vented (3-sided) seal allows air to escape on exhalation, preventing tension pneumothorax.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Trauma",question:"GCS of 8 or less generally indicates:",optionA:"Mild head injury",optionB:"Moderate head injury",optionC:"Severe head injury \u2014 consider advanced airway",optionD:"Normal neurological status",correct:"C",explanation:"GCS \u22648 is the threshold for considering definitive airway management.",difficulty:"EMT-Advanced",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Trauma",question:"Cushing's triad indicates:",optionA:"Hypovolemic shock",optionB:"Increasing intracranial pressure",optionC:"Cardiac tamponade",optionD:"Anaphylactic shock",correct:"B",explanation:"Cushing's triad (HTN, bradycardia, irregular respirations) = late sign of increased ICP and impending herniation.",difficulty:"EMT-Advanced",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Trauma",question:"Permissive hypotension in penetrating trauma targets SBP of:",optionA:"60-70 mmHg",optionB:"80-90 mmHg",optionC:"120-130 mmHg",optionD:"As high as possible",correct:"B",explanation:"Permissive hypotension (SBP 80-90) limits further hemorrhage. Exception: TBI.",difficulty:"EMT-Advanced",certLevels:["AEMT", "Paramedic"],status:'approved'},
@@ -839,7 +857,7 @@ const starterQs=[
 {category:"Trauma",question:"Pelvic fractures can contain how much blood loss?",optionA:"100-200 mL",optionB:"500-800 mL",optionC:"2-4 liters",optionD:"No significant blood loss",correct:"C",explanation:"The pelvis can hold 2-4 liters of blood.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Trauma",question:"Estimated blood loss from a closed femur fracture:",optionA:"100-200 mL",optionB:"500 mL",optionC:"1000-1500 mL",optionD:"3000+ mL",correct:"C",explanation:"Closed femur fracture = 1000-1500 mL blood loss into the thigh compartment.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Trauma",question:"Appropriate device for a seated patient with suspected spinal injury:",optionA:"Long backboard only",optionB:"Kendrick Extrication Device (KED)",optionC:"Cervical collar alone",optionD:"Scoop stretcher",correct:"B",explanation:"KED stabilizes head, neck, and torso before moving a seated patient.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
-{category:"Medical Emergencies",question:"Diabetic patient unconscious, cannot swallow. Treatment:",optionA:"Oral glucose gel under tongue",optionB:"Dextrose IV or glucagon IM",optionC:"Transport only",optionD:"Insulin administration",correct:"B",explanation:"Unconscious patients cannot receive oral glucose. Give D50 IV or glucagon IM.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
+{category:"Medical Emergencies",question:"Diabetic patient unconscious, cannot swallow. Treatment:",optionA:"Oral glucose gel under tongue",optionB:"Dextrose IV or glucagon IM",optionC:"Transport only",optionD:"Insulin administration",correct:"B",explanation:"Unconscious patients cannot receive oral glucose. Give D50 IV or glucagon IM.",difficulty:"EMT-Basic",certLevels:["AEMT", "Paramedic"],status:'approved'},
 {category:"Medical Emergencies",question:"Sudden severe worst headache of life suggests:",optionA:"Tension headache",optionB:"Migraine",optionC:"Subarachnoid hemorrhage",optionD:"Hypertensive urgency",correct:"C",explanation:"Thunderclap headache = subarachnoid hemorrhage until proven otherwise.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Medical Emergencies",question:"Signs of hyperglycemia include:",optionA:"Diaphoresis, tremors, tachycardia",optionB:"Polydipsia, polyuria, Kussmaul respirations",optionC:"Pale skin, bradycardia, diaphoresis",optionD:"Bradycardia, miosis, bronchospasm",correct:"B",explanation:"Hyperglycemia: polydipsia, polyuria, polyphagia \u2014 plus Kussmaul breathing in DKA.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Medical Emergencies",question:"Status epilepticus is defined as:",optionA:"Any seizure lasting more than 30 seconds",optionB:"Seizure >5 minutes OR two seizures without return to baseline",optionC:"Seizure with post-ictal confusion",optionD:"Three or more seizures in one hour",correct:"B",explanation:"Status epilepticus = seizure >5 min OR two seizures without return to consciousness.",difficulty:"EMT-Advanced",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
@@ -852,14 +870,14 @@ const starterQs=[
 {category:"Medical Emergencies",question:"Which medication is indicated for anaphylaxis?",optionA:"Albuterol",optionB:"Epinephrine",optionC:"Diphenhydramine",optionD:"Nitroglycerin",correct:"B",explanation:"Epinephrine 0.3 mg IM is first-line for anaphylaxis.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Medical Emergencies",question:"Cincinnati Stroke Scale assesses:",optionA:"LOC, pupil response, grip strength",optionB:"Facial droop, arm drift, speech",optionC:"BP, pulse, respirations",optionD:"Vision, balance, headache",correct:"B",explanation:"Cincinnati Stroke Scale = facial droop + arm drift + abnormal speech.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Medical Emergencies",question:"Postictal patient should be placed in:",optionA:"Supine with legs elevated",optionB:"Fowlers position",optionC:"Left lateral recumbent (recovery position)",optionD:"Prone position",correct:"C",explanation:"Recovery position protects the airway from secretions and vomit in the postictal phase.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
-{category:"Pharmacology",question:"Aspirin dose for suspected ACS:",optionA:"81 mg",optionB:"162-324 mg",optionC:"500 mg",optionD:"1000 mg",correct:"B",explanation:"Standard ACS dose: 162-324 mg (2-4 baby aspirin) chewed.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
+{category:"Pharmacology",question:"Aspirin dose for suspected ACS:",optionA:"81 mg",optionB:"162-324 mg",optionC:"500 mg",optionD:"1000 mg",correct:"B",explanation:"Standard ACS dose: 162-324 mg (2-4 baby aspirin) chewed.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"Nitroglycerin contraindicated if SBP below:",optionA:"100 mmHg",optionB:"90 mmHg",optionC:"110 mmHg",optionD:"120 mmHg",correct:"B",explanation:"NTG contraindicated with SBP <90 mmHg due to risk of further hypotension.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"Activated charcoal works by:",optionA:"Neutralizing the toxin",optionB:"Binding to toxins in the GI tract",optionC:"Inducing vomiting",optionD:"Diluting the poison",correct:"B",explanation:"Activated charcoal adsorbs toxins in the GI tract to prevent absorption.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"Adult epinephrine 1:10,000 dose for cardiac arrest:",optionA:"0.3 mg IV",optionB:"0.5 mg IV",optionC:"1 mg IV",optionD:"3 mg IV",correct:"C",explanation:"Epinephrine 1 mg IV/IO every 3-5 minutes during cardiac arrest (ACLS).",difficulty:"EMT-Advanced",certLevels:["AEMT", "Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"Amiodarone 300 mg IV is indicated for:",optionA:"Stable SVT",optionB:"Pulseless VT/VF refractory to defibrillation",optionC:"Bradycardia",optionD:"Symptomatic A-fib",correct:"B",explanation:"Amiodarone 300 mg is first-line antiarrhythmic for pulseless VT/VF after second shock.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"Atropine treats bradycardia by:",optionA:"Direct cardiac stimulation",optionB:"Blocking parasympathetic (vagal) tone",optionC:"Increasing preload",optionD:"Beta-adrenergic stimulation",correct:"B",explanation:"Atropine is anticholinergic \u2014 blocks vagal tone, allowing heart rate to increase.",difficulty:"EMT-Advanced",certLevels:["AEMT", "Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"Naloxone reverses opioid overdose by:",optionA:"Breaking down opioids in the bloodstream",optionB:"Competing with opioids at receptor sites",optionC:"Stimulating respiratory drive directly",optionD:"Increasing blood pressure",correct:"B",explanation:"Naloxone is a competitive opioid receptor antagonist.",difficulty:"EMT-Basic",certLevels:["EMR", "EMT", "AEMT", "Paramedic"],status:'approved'},
-{category:"Pharmacology",question:"EMT-Basic scope medication for bronchospasm:",optionA:"Epinephrine 1:1000",optionB:"Patient's own prescribed albuterol (assisted use)",optionC:"Ipratropium bromide",optionD:"Methylprednisolone",correct:"B",explanation:"EMT-Basics can assist patients in using their own prescribed albuterol MDI.",difficulty:"EMT-Basic",certLevels:["EMT"],status:'approved'},
+{category:"Pharmacology",question:"EMT-Basic scope medication for bronchospasm:",optionA:"Epinephrine 1:1000",optionB:"Patient's own prescribed albuterol (assisted use)",optionC:"Ipratropium bromide",optionD:"Methylprednisolone",correct:"B",explanation:"EMT-Basics can assist patients in using their own prescribed albuterol MDI.",difficulty:"EMT-Basic",certLevels:["EMT", "AEMT", "Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"Magnesium sulfate is NOT used for:",optionA:"Torsades de pointes",optionB:"Severe asthma",optionC:"Eclampsia",optionD:"Hypoglycemia",correct:"D",explanation:"Mag sulfate treats Torsades, severe asthma, and eclampsia. No role in hypoglycemia.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"TXA in trauma should be given within:",optionA:"30 minutes",optionB:"1 hour",optionC:"3 hours",optionD:"6 hours",correct:"C",explanation:"TXA reduces mortality if given within 3 hours of hemorrhagic trauma.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
 {category:"Pharmacology",question:"Dopamine at 2-4 mcg/kg/min primarily causes:",optionA:"Vasoconstriction",optionB:"Renal and mesenteric vasodilation",optionC:"Bronchodilation",optionD:"Increased heart rate only",correct:"B",explanation:"Low-dose dopamine acts on dopaminergic receptors causing renal vasodilation.",difficulty:"EMT-Advanced",certLevels:["Paramedic"],status:'approved'},
@@ -984,24 +1002,64 @@ async function loadQuestionCounts(){
 // QUIZ
 window.startQuizByCategory=async(category)=>{ isMissedQuiz=false; await loadAllQuestions(); currentCategory=category; const approved=allQuestions.filter(q=>q.status==='approved').filter(q=>{ if(!q.certLevels&&!q.certLevel) return true; const levels=q.certLevels||(q.certLevel?[q.certLevel]:[]); return levels.includes(currentLevel)||currentLevel==='Paramedic'&&levels.length>0; }); quizQuestions=shuffle(category==='Mixed'?[...approved]:approved.filter(q=>q.category===category)).slice(0,20); if(quizQuestions.length===0){showToast('No questions in this category yet!','error');return;} currentQuestionIndex=0; score=0; showScreen('screen-quiz'); renderQuestion(); };
 
-function renderQuestion(){ const q=quizQuestions[currentQuestionIndex]; document.getElementById('quiz-category-tag').textContent=`// ${q.category?.toUpperCase()}`; document.getElementById('quiz-question-text').textContent=q.question; document.getElementById('quiz-score-display').textContent=score; document.getElementById('quiz-total-display').textContent=currentQuestionIndex; document.getElementById('quiz-progress').style.width=`${(currentQuestionIndex/quizQuestions.length)*100}%`; document.getElementById('quiz-next-btn').style.display='none'; document.getElementById('quiz-explanation').classList.remove('show'); document.getElementById('quiz-explanation').textContent=''; const optionsEl=document.getElementById('quiz-options'); optionsEl.innerHTML=''; ['A','B','C','D'].forEach(letter=>{ const text=q[`option${letter}`]; if(!text) return; const btn=document.createElement('button'); btn.className='quiz-option'; btn.innerHTML=`<span class="option-letter">${letter}</span>${text}`; btn.onclick=()=>selectAnswer(letter,q.correct,q.explanation,q); optionsEl.appendChild(btn); }); }
+function renderQuestion(){
+  const q = quizQuestions[currentQuestionIndex];
+  document.getElementById('quiz-category-tag').textContent = `// ${q.category?.toUpperCase()}`;
+  document.getElementById('quiz-question-text').textContent = q.question;
+  document.getElementById('quiz-score-display').textContent = score;
+  document.getElementById('quiz-total-display').textContent = currentQuestionIndex;
+  document.getElementById('quiz-progress').style.width = `${(currentQuestionIndex/quizQuestions.length)*100}%`;
+  document.getElementById('quiz-next-btn').style.display = 'none';
+  document.getElementById('quiz-explanation').classList.remove('show');
+  document.getElementById('quiz-explanation').textContent = '';
 
-window.selectAnswer=(selected,correct,explanation,q)=>{
-  document.querySelectorAll('.quiz-option').forEach(btn=>{
-    btn.disabled=true;
-    const l=btn.querySelector('.option-letter').textContent;
-    if(l===correct) btn.classList.add('correct');
-    else if(l===selected&&selected!==correct) btn.classList.add('wrong');
-  });
-  if(selected===correct){
-    score++;
-    if(isMissedQuiz && q) correctMissed(q.id); // streak progress
-  } else {
-    if(q) addMissed(q); // add/reset streak
+  const optionsEl = document.getElementById('quiz-options');
+  optionsEl.innerHTML = '';
+
+  // Build [{letter, text}] and shuffle
+  const correctText = q[`option${q.correct}`];
+  let opts = ['A','B','C','D']
+    .map(l => ({ orig: l, text: q[`option${l}`] }))
+    .filter(o => o.text);
+  for(let i = opts.length-1; i > 0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
   }
-  if(explanation){const expEl=document.getElementById('quiz-explanation');expEl.textContent=`💡 ${explanation}`;expEl.classList.add('show');}
-  document.getElementById('quiz-score-display').textContent=score;
-  document.getElementById('quiz-next-btn').style.display='block';
+
+  // Find which display letter (A-D) maps to the correct answer AFTER shuffle
+  const displayLetters = ['A','B','C','D'];
+  let correctDisplayLetter = 'A';
+  opts.forEach((o, i) => { if(o.text === correctText) correctDisplayLetter = displayLetters[i]; });
+
+  // Build buttons — capture correctDisplayLetter in closure AFTER it's fully determined
+  opts.forEach((o, i) => {
+    const displayLetter = displayLetters[i];
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.dataset.letter = displayLetter;
+    btn.innerHTML = `<span class="option-letter">${displayLetter}</span>${o.text}`;
+    const isCorrect = (o.text === correctText);
+    btn.onclick = () => selectAnswer(displayLetter, correctDisplayLetter, q.explanation, q, isCorrect);
+    optionsEl.appendChild(btn);
+  });
+}
+
+window.selectAnswer=(selected, correctLetter, explanation, q, isCorrect)=>{
+  document.querySelectorAll('.quiz-option').forEach(btn=>{
+    btn.disabled = true;
+    const letter = btn.dataset.letter;
+    if(letter === correctLetter) btn.classList.add('correct');
+    else if(letter === selected && !isCorrect) btn.classList.add('wrong');
+  });
+  if(isCorrect){
+    score++;
+    if(isMissedQuiz && q) correctMissed(q.id);
+  } else {
+    if(q) addMissed(q);
+  }
+  if(explanation){ const expEl=document.getElementById('quiz-explanation'); expEl.textContent=`💡 ${explanation}`; expEl.classList.add('show'); }
+  document.getElementById('quiz-score-display').textContent = score;
+  document.getElementById('quiz-next-btn').style.display = 'block';
 };
 
 window.nextQuestion=()=>{ currentQuestionIndex++; if(currentQuestionIndex>=quizQuestions.length) showResults(); else renderQuestion(); };
@@ -1385,10 +1443,148 @@ function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.r
 let toastTimeout;
 window.showToast=(msg,type='')=>{ const t=document.getElementById('toast'); t.textContent=msg; t.className=`toast show ${type}`; clearTimeout(toastTimeout); toastTimeout=setTimeout(()=>t.classList.remove('show'),3000); };
 
+
+
+window.loadFlagTab = async () => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-flags').classList.add('active');
+  const listEl = document.getElementById('admin-list');
+  listEl.innerHTML = '<div class="loading"><div class="spinner"></div>LOADING FLAGS...</div>';
+  try {
+    const snap = await getDocs(collection(db, 'flags'));
+    if(snap.empty) {
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🚩</div><div class="empty-state-text">NO FLAGS SUBMITTED YET</div></div>';
+      return;
+    }
+    // Update badge
+    const badge = document.getElementById('flag-count-badge');
+    if(badge){ badge.style.display='inline'; badge.textContent=snap.size; }
+    listEl.innerHTML = '<div class="question-list">' + snap.docs.map(d => {
+      const f = d.data();
+      return `<div class="question-item">
+        <div class="question-item-header">
+          <div class="question-text">${f.questionText}</div>
+          <span class="pending-badge">${f.reason}</span>
+        </div>
+        <div class="question-meta">${f.category} · Levels: ${(f.certLevels||[]).join(', ')||'unknown'}</div>
+        ${f.notes ? `<div style="font-size:0.85rem;color:var(--text-dim);margin-top:0.5rem;font-style:italic">"${f.notes}"</div>` : ''}
+        <div class="question-meta" style="margin-top:0.5rem">${new Date(f.flaggedAt).toLocaleDateString()}</div>
+        <div style="margin-top:0.75rem">
+          <button class="btn-delete" onclick="dismissFlag('${d.id}')">DISMISS</button>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  } catch(e) { listEl.innerHTML = '<div class="empty-state"><div class="empty-state-text">ERROR LOADING FLAGS</div></div>'; console.error(e); }
+};
+
+window.dismissFlag = async (id) => {
+  if(!confirm('Dismiss this flag?')) return;
+  try {
+    await deleteDoc(doc(db,'flags',id));
+    showToast('Flag dismissed','success');
+    loadFlagTab();
+  } catch(e) { showToast('Error','error'); }
+};
+
+// Load flag count on admin page open
+const _origLoadAdminTab = loadAdminTab;
+window.loadAdminTab = async (tab) => {
+  await _origLoadAdminTab(tab);
+  // Also update flag badge count
+  try {
+    const snap = await getDocs(collection(db,'flags'));
+    const badge = document.getElementById('flag-count-badge');
+    if(badge){ badge.style.display = snap.size > 0 ? 'inline' : 'none'; badge.textContent = snap.size; }
+  } catch(e){}
+};
+
+// ── FLAG SYSTEM ───────────────────────────────────────────────────────────────
+let currentFlagQuestion = null;
+let selectedFlagReason = '';
+
+window.openFlagModal = () => {
+  const q = quizQuestions[currentQuestionIndex];
+  if(!q) return;
+  currentFlagQuestion = q;
+  selectedFlagReason = '';
+  document.querySelectorAll('.flag-reason-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('flag-notes').value = '';
+  document.getElementById('flag-modal').style.display = 'flex';
+};
+
+window.closeFlagModal = () => {
+  document.getElementById('flag-modal').style.display = 'none';
+};
+
+window.selectFlagReason = (btn, reason) => {
+  document.querySelectorAll('.flag-reason-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedFlagReason = reason;
+};
+
+window.submitFlag = async () => {
+  if(!selectedFlagReason) { showToast('Please select a reason', 'error'); return; }
+  const notes = document.getElementById('flag-notes').value.trim();
+  const q = currentFlagQuestion;
+  try {
+    await addDoc(collection(db, 'flags'), {
+      questionId: q.id || null,
+      questionText: q.question,
+      category: q.category,
+      certLevels: q.certLevels || [],
+      reason: selectedFlagReason,
+      notes: notes,
+      flaggedAt: new Date().toISOString()
+    });
+    // Mark button as flagged
+    const flagBtn = document.getElementById('quiz-flag-btn');
+    if(flagBtn){ flagBtn.classList.add('flagged'); flagBtn.textContent = '🚩 FLAGGED'; flagBtn.disabled = true; }
+    closeFlagModal();
+    showToast('Flag submitted — thank you!', 'success');
+  } catch(e) {
+    showToast('Error submitting flag', 'error');
+    console.error(e);
+  }
+};
+
+// Reset flag button on each new question
+const _origRenderQuestion = renderQuestion;
+function renderQuestion() {
+  _origRenderQuestion();
+  const flagBtn = document.getElementById('quiz-flag-btn');
+  if(flagBtn){ flagBtn.classList.remove('flagged'); flagBtn.disabled = false; flagBtn.innerHTML = '🚩 FLAG'; }
+}
+
 // INIT
 seedStarterQuestions();
 loadQuestionCounts();
 updateMissedUI();
 </script>
+
+<!-- FLAG MODAL -->
+<div id="flag-modal" class="flag-modal" style="display:none" onclick="if(event.target===this)closeFlagModal()">
+  <div class="flag-modal-box">
+    <div class="flag-modal-title">🚩 FLAG QUESTION</div>
+    <div class="flag-modal-sub">HELP US IMPROVE THE QUESTION BANK</div>
+    <div class="form-label" style="margin-bottom:0.75rem">REASON FOR FLAG</div>
+    <div class="flag-reason-grid">
+      <button class="flag-reason-btn" onclick="selectFlagReason(this,'Wrong scope/level')">Wrong scope/level</button>
+      <button class="flag-reason-btn" onclick="selectFlagReason(this,'Incorrect answer')">Incorrect answer</button>
+      <button class="flag-reason-btn" onclick="selectFlagReason(this,'Outdated information')">Outdated info</button>
+      <button class="flag-reason-btn" onclick="selectFlagReason(this,'Ambiguous question')">Ambiguous question</button>
+      <button class="flag-reason-btn" onclick="selectFlagReason(this,'Duplicate question')">Duplicate question</button>
+      <button class="flag-reason-btn" onclick="selectFlagReason(this,'Other issue')">Other issue</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ADDITIONAL DETAILS (optional)</label>
+      <textarea class="form-textarea" id="flag-notes" placeholder="Describe the issue..." style="min-height:70px"></textarea>
+    </div>
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end">
+      <button class="btn-back" onclick="closeFlagModal()">CANCEL</button>
+      <button class="btn-primary" onclick="submitFlag()" style="font-size:0.9rem;padding:8px 20px">SUBMIT FLAG</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
