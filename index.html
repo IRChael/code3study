@@ -60,6 +60,26 @@
   .passcode-sub { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 1.5rem; }
 
 
+
+
+  /* EDIT QUESTION MODAL */
+  .edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 6000; display: flex; align-items: flex-start; justify-content: center; padding: 1rem; overflow-y: auto; }
+  .edit-modal-box { background: var(--surface); border: 1px solid var(--gold); border-radius: 10px; padding: 2rem; width: 100%; max-width: 680px; margin: auto; animation: fadeInUp 0.2s ease; }
+  .edit-modal-title { font-family: var(--display); font-size: 1.4rem; letter-spacing: 2px; color: var(--gold2); margin-bottom: 0.25rem; }
+  .edit-modal-sub { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 1.5rem; }
+  .level-check-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.4rem; }
+  .level-check { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); transition: all 0.15s; user-select: none; }
+  .level-check.on { border-color: var(--gold); background: rgba(200,151,58,0.12); color: var(--gold2); }
+  /* DIFFICULTY STATS */
+  .diff-badge { display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 1px; padding: 2px 8px; border-radius: 3px; }
+  .diff-easy { background: rgba(0,255,136,0.1); border: 1px solid var(--green); color: var(--green); }
+  .diff-moderate { background: rgba(255,140,0,0.1); border: 1px solid var(--accent2); color: var(--accent2); }
+  .diff-hard { background: rgba(255,45,85,0.1); border: 1px solid var(--red); color: var(--red); }
+  .diff-new { background: rgba(107,107,128,0.1); border: 1px solid var(--text-dim); color: var(--text-dim); }
+  .stats-reveal { margin-top: 0.75rem; padding: 0.75rem 1rem; background: var(--surface2); border-radius: 6px; font-family: var(--mono); font-size: 0.72rem; display: none; }
+  .stats-reveal.show { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; animation: fadeIn 0.3s ease; }
+  .stats-bar-wrap { flex: 1; min-width: 100px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .stats-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
   /* FLAG SYSTEM */
   .flag-btn { background: transparent; border: 1px solid rgba(255,140,0,0.4); color: var(--accent2); font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; padding: 4px 10px; cursor: pointer; border-radius: 4px; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
   .flag-btn:hover { background: rgba(255,140,0,0.1); border-color: var(--accent2); }
@@ -481,7 +501,6 @@
           <div class="form-group"><label class="form-label">ANSWER OPTIONS</label><div class="options-grid"><div class="option-input-group"><span class="option-label-tag">A</span><input class="form-input" id="opt-a" placeholder="Option A"></div><div class="option-input-group"><span class="option-label-tag">B</span><input class="form-input" id="opt-b" placeholder="Option B"></div><div class="option-input-group"><span class="option-label-tag">C</span><input class="form-input" id="opt-c" placeholder="Option C"></div><div class="option-input-group"><span class="option-label-tag">D</span><input class="form-input" id="opt-d" placeholder="Option D"></div></div></div>
           <div class="form-group"><label class="form-label">CORRECT ANSWER</label><select class="form-select" id="submit-correct"><option value="">Select...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
           <div class="form-group"><label class="form-label">EXPLANATION (optional)</label><textarea class="form-textarea" id="submit-explanation" placeholder="Why is this correct?"></textarea></div>
-          <div class="form-group"><label class="form-label">DIFFICULTY</label><select class="form-select" id="submit-difficulty"><option value="EMT-Basic">EMT-Basic</option><option value="EMT-Advanced">EMT-Advanced</option></select></div>
           <div class="form-group"><label class="form-label">CERTIFICATION LEVEL</label><select class="form-select" id="submit-certlevel"><option value="EMR">EMR</option><option value="EMT">EMT</option><option value="AEMT">AEMT</option><option value="Paramedic">Paramedic</option></select></div>
           <button class="btn-primary" onclick="submitQuestion()">SUBMIT FOR REVIEW</button>
         </div>
@@ -597,6 +616,7 @@
     <div class="quiz-question" id="quiz-question-text"></div>
     <div class="quiz-options" id="quiz-options"></div>
     <div class="explanation" id="quiz-explanation"></div>
+    <div class="stats-reveal" id="quiz-stats-reveal"></div>
     <div class="quiz-footer">
       <button class="flag-btn" id="quiz-flag-btn" onclick="openFlagModal()" title="Flag this question">🚩 FLAG</button>
       <button class="btn-primary" id="quiz-next-btn" onclick="nextQuestion()" style="display:none">NEXT →</button>
@@ -1003,12 +1023,17 @@ async function loadQuestionCounts(){
 window.startQuizByCategory=async(category)=>{ isMissedQuiz=false; await loadAllQuestions(); currentCategory=category; const approved=allQuestions.filter(q=>q.status==='approved').filter(q=>{ if(!q.certLevels&&!q.certLevel) return true; const levels=q.certLevels||(q.certLevel?[q.certLevel]:[]); return levels.includes(currentLevel)||currentLevel==='Paramedic'&&levels.length>0; }); quizQuestions=shuffle(category==='Mixed'?[...approved]:approved.filter(q=>q.category===category)).slice(0,20); if(quizQuestions.length===0){showToast('No questions in this category yet!','error');return;} currentQuestionIndex=0; score=0; showScreen('screen-quiz'); renderQuestion(); };
 
 function renderQuestion(){
-  // Reset flag button
+  // Reset flag button and stats
   const flagBtn = document.getElementById('quiz-flag-btn');
   if(flagBtn){ flagBtn.classList.remove('flagged'); flagBtn.disabled = false; flagBtn.innerHTML = '🚩 FLAG'; }
+  const statsEl = document.getElementById('quiz-stats-reveal');
+  if(statsEl){ statsEl.classList.remove('show'); statsEl.innerHTML = ''; }
 
   const q = quizQuestions[currentQuestionIndex];
-  document.getElementById('quiz-category-tag').textContent = `// ${q.category?.toUpperCase()}`;
+  const qStats = q.stats || {};
+  const qDiff = getDifficultyLabel(qStats.attempts||0, qStats.correct||0);
+  const catEl = document.getElementById('quiz-category-tag');
+  catEl.innerHTML = `// ${(q.category||'').toUpperCase()} &nbsp;<span class="diff-badge ${qDiff.cls}">${qDiff.label}${qDiff.pct!==null?' · '+qDiff.pct+'%':''}</span>`;
   document.getElementById('quiz-question-text').textContent = q.question;
   document.getElementById('quiz-score-display').textContent = score;
   document.getElementById('quiz-total-display').textContent = currentQuestionIndex;
@@ -1064,6 +1089,10 @@ window.selectAnswer=(selected, correctLetter, explanation, q, isCorrect)=>{
   if(explanation){ const expEl=document.getElementById('quiz-explanation'); expEl.textContent=`💡 ${explanation}`; expEl.classList.add('show'); }
   document.getElementById('quiz-score-display').textContent = score;
   document.getElementById('quiz-next-btn').style.display = 'block';
+
+  // Track stats and show community stats
+  if(q && q.id) recordAnswer(q.id, isCorrect);
+  showQuestionStats(q, isCorrect);
 };
 
 window.nextQuestion=()=>{ currentQuestionIndex++; if(currentQuestionIndex>=quizQuestions.length) showResults(); else renderQuestion(); };
@@ -1399,10 +1428,10 @@ function showResults(){
 }
 
 // SUBMIT
-window.submitQuestion=async()=>{ const category=document.getElementById('submit-category').value; const question=document.getElementById('submit-question').value.trim(); const optA=document.getElementById('opt-a').value.trim(); const optB=document.getElementById('opt-b').value.trim(); const optC=document.getElementById('opt-c').value.trim(); const optD=document.getElementById('opt-d').value.trim(); const correct=document.getElementById('submit-correct').value; if(!category||!question||!optA||!optB||!optC||!optD||!correct){showToast('Fill in all required fields','error');return;} try{ await addDoc(collection(db,'questions'),{category,question,optionA:optA,optionB:optB,optionC:optC,optionD:optD,correct,explanation:document.getElementById('submit-explanation').value.trim(),difficulty:document.getElementById('submit-difficulty').value,status:'pending',submittedAt:new Date().toISOString()}); showToast('Question submitted for review!','success'); ['submit-category','submit-question','opt-a','opt-b','opt-c','opt-d','submit-correct','submit-explanation'].forEach(id=>document.getElementById(id).value=''); }catch(e){showToast('Error submitting','error');} };
+window.submitQuestion=async()=>{ const category=document.getElementById('submit-category').value; const question=document.getElementById('submit-question').value.trim(); const optA=document.getElementById('opt-a').value.trim(); const optB=document.getElementById('opt-b').value.trim(); const optC=document.getElementById('opt-c').value.trim(); const optD=document.getElementById('opt-d').value.trim(); const correct=document.getElementById('submit-correct').value; if(!category||!question||!optA||!optB||!optC||!optD||!correct){showToast('Fill in all required fields','error');return;} try{ await addDoc(collection(db,'questions'),{category,question,optionA:optA,optionB:optB,optionC:optC,optionD:optD,correct,explanation:document.getElementById('submit-explanation').value.trim(),status:'pending',submittedAt:new Date().toISOString()}); showToast('Question submitted for review!','success'); ['submit-category','submit-question','opt-a','opt-b','opt-c','opt-d','submit-correct','submit-explanation'].forEach(id=>document.getElementById(id).value=''); }catch(e){showToast('Error submitting','error');} };
 
 // ADMIN
-window.loadAdminTab=async(tab)=>{ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); const tabEl=document.getElementById(`tab-${tab}`); if(tabEl) tabEl.classList.add('active'); await loadAllQuestions(); const filtered=allQuestions.filter(q=>q.status===tab); const listEl=document.getElementById('admin-list'); if(filtered.length===0){listEl.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">NO ${tab.toUpperCase()} QUESTIONS</div></div>`;return;} listEl.innerHTML=`<div class="question-list">${filtered.map(q=>`<div class="question-item"><div class="question-item-header"><div class="question-text">${q.question}</div><span class="${tab==='pending'?'pending-badge':'approved-badge'}">${tab.toUpperCase()}</span></div><div class="question-meta">${q.category} • ${q.difficulty||'EMT-Basic'}</div><div class="question-answer">✓ ${q.correct}: ${q[`option${q.correct}`]}</div><div style="margin-top:0.75rem">${tab==='pending'?`<button class="btn-approve" onclick="approveQuestion('${q.id}')">APPROVE</button>`:''}<button class="btn-delete" onclick="deleteQuestion('${q.id}')">DELETE</button></div></div>`).join('')}</div>`; };
+window.loadAdminTab=async(tab)=>{ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); const tabEl=document.getElementById(`tab-${tab}`); if(tabEl) tabEl.classList.add('active'); await loadAllQuestions(); const filtered=allQuestions.filter(q=>q.status===tab); const listEl=document.getElementById('admin-list'); if(filtered.length===0){listEl.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">NO ${tab.toUpperCase()} QUESTIONS</div></div>`;return;} listEl.innerHTML=`<div class="question-list">${filtered.map(q=>`<div class="question-item"><div class="question-item-header"><div class="question-text">${q.question}</div><span class="${tab==='pending'?'pending-badge':'approved-badge'}">${tab.toUpperCase()}</span></div><div class="question-meta">${q.category} • ${q.difficulty||'EMT-Basic'}</div><div class="question-answer">✓ ${q.correct}: ${q[`option${q.correct}`]}</div><div style="margin-top:0.75rem">${tab==='pending'?`<button class="btn-approve" onclick="approveQuestion('${q.id}')">APPROVE</button>`:''}<button class="btn-approve" style="margin-left:0.5rem" onclick="openEditModal('${q.id}', null)">✏️ EDIT</button><button class="btn-delete" onclick="deleteQuestion('${q.id}')">DELETE</button></div></div>`).join('')}</div>`; };
 window.approveQuestion=async(id)=>{ try{await updateDoc(doc(db,'questions',id),{status:'approved'});showToast('Approved!','success');loadAdminTab('pending');}catch(e){showToast('Error','error');} };
 window.deleteQuestion=async(id)=>{ if(!confirm('Delete this question?')) return; try{await deleteDoc(doc(db,'questions',id));showToast('Deleted','success');await loadAllQuestions();}catch(e){showToast('Error','error');} };
 window.adminAddQuestion=async()=>{ const category=document.getElementById('admin-category').value; const question=document.getElementById('admin-question').value.trim(); const optA=document.getElementById('admin-opt-a').value.trim(); const optB=document.getElementById('admin-opt-b').value.trim(); const optC=document.getElementById('admin-opt-c').value.trim(); const optD=document.getElementById('admin-opt-d').value.trim(); const correct=document.getElementById('admin-correct').value; if(!category||!question||!optA||!optB||!optC||!optD||!correct){showToast('Fill in all fields','error');return;} try{await addDoc(collection(db,'questions'),{category,question,optionA:optA,optionB:optB,optionC:optC,optionD:optD,correct,explanation:document.getElementById('admin-explanation').value.trim(),difficulty:document.getElementById('admin-difficulty').value,status:'approved',submittedAt:new Date().toISOString()});showToast('Question added!','success');showDashboardPage('admin');}catch(e){showToast('Error','error');} };
@@ -1474,6 +1503,7 @@ window.loadFlagTab = async () => {
         ${f.notes ? `<div style="font-size:0.85rem;color:var(--text-dim);margin-top:0.5rem;font-style:italic">"${f.notes}"</div>` : ''}
         <div class="question-meta" style="margin-top:0.5rem">${new Date(f.flaggedAt).toLocaleDateString()}</div>
         <div style="margin-top:0.75rem">
+          <button class="btn-approve" onclick="openEditModal('${f.questionId}', '${d.id}')">✏️ EDIT QUESTION</button>
           <button class="btn-delete" onclick="dismissFlag('${d.id}')">DISMISS</button>
         </div>
       </div>`;
@@ -1501,6 +1531,169 @@ window.loadAdminTab = async (tab) => {
     if(badge){ badge.style.display = snap.size > 0 ? 'inline' : 'none'; badge.textContent = snap.size; }
   } catch(e){}
 };
+
+
+
+// ── EDIT QUESTION MODAL ────────────────────────────────────────────────────────
+let editLevels = [];
+let editingQuestionId = null;
+let editingFlagId = null;
+
+window.openEditModal = async (questionId, flagId) => {
+  if(!questionId){ showToast('No question ID linked to this flag','error'); return; }
+  editingQuestionId = questionId;
+  editingFlagId = flagId;
+  document.getElementById('edit-modal-sub').textContent = 'QUESTION ID: ' + questionId;
+  document.getElementById('edit-q-id').value = questionId;
+  document.getElementById('edit-flag-id').value = flagId || '';
+
+  // Load question from Firestore
+  try {
+    const snap = await getDoc(doc(db, 'questions', questionId));
+    if(!snap.exists()){ showToast('Question not found in database','error'); return; }
+    const q = snap.data();
+
+    document.getElementById('edit-category').value = q.category || '';
+    document.getElementById('edit-question').value = q.question || '';
+    document.getElementById('edit-opt-a').value = q.optionA || '';
+    document.getElementById('edit-opt-b').value = q.optionB || '';
+    document.getElementById('edit-opt-c').value = q.optionC || '';
+    document.getElementById('edit-opt-d').value = q.optionD || '';
+    document.getElementById('edit-correct').value = q.correct || 'A';
+    document.getElementById('edit-explanation').value = q.explanation || '';
+
+    // Set levels
+    editLevels = q.certLevels || (q.certLevel ? [q.certLevel] : []);
+    ['EMR','EMT','AEMT','Paramedic'].forEach(l => {
+      const el = document.getElementById('ec-' + l.toLowerCase());
+      if(el) el.classList.toggle('on', editLevels.includes(l));
+    });
+
+    // Show stats
+    const stats = q.stats || {};
+    const attempts = stats.attempts || 0;
+    const correct = stats.correct || 0;
+    const statsRow = document.getElementById('edit-stats-row');
+    const statsDisplay = document.getElementById('edit-stats-display');
+    if(attempts > 0) {
+      const rate = Math.round((correct/attempts)*100);
+      const diff = getDifficultyLabel(attempts, correct);
+      statsRow.style.display = 'block';
+      statsDisplay.innerHTML = `<span class="diff-badge ${diff.cls}">${diff.label}</span> &nbsp; ${correct}/${attempts} correct (${rate}%) &nbsp; <span style="color:var(--text-dim)">Auto-difficulty based on ${attempts} answer${attempts!==1?'s':''}</span>`;
+    } else {
+      statsRow.style.display = 'none';
+    }
+
+    document.getElementById('edit-modal').style.display = 'flex';
+  } catch(e) { showToast('Error loading question: ' + e.message,'error'); console.error(e); }
+};
+
+window.toggleEditLevel = (level) => {
+  const el = document.getElementById('ec-' + level.toLowerCase());
+  if(editLevels.includes(level)){
+    editLevels = editLevels.filter(l => l !== level);
+    if(el) el.classList.remove('on');
+  } else {
+    editLevels.push(level);
+    if(el) el.classList.add('on');
+  }
+};
+
+window.closeEditModal = () => {
+  document.getElementById('edit-modal').style.display = 'none';
+  editingQuestionId = null;
+  editingFlagId = null;
+};
+
+window.saveEditedQuestion = async () => {
+  const qId = editingQuestionId;
+  if(!qId){ showToast('No question selected','error'); return; }
+  const category = document.getElementById('edit-category').value;
+  const question = document.getElementById('edit-question').value.trim();
+  const optA = document.getElementById('edit-opt-a').value.trim();
+  const optB = document.getElementById('edit-opt-b').value.trim();
+  const optC = document.getElementById('edit-opt-c').value.trim();
+  const optD = document.getElementById('edit-opt-d').value.trim();
+  const correct = document.getElementById('edit-correct').value;
+  const explanation = document.getElementById('edit-explanation').value.trim();
+  if(!question||!optA||!optB||!optC||!optD){ showToast('Fill in all fields','error'); return; }
+  if(editLevels.length === 0){ showToast('Select at least one certification level','error'); return; }
+  try {
+    await updateDoc(doc(db,'questions',qId), {
+      category, question,
+      optionA:optA, optionB:optB, optionC:optC, optionD:optD,
+      correct, explanation, certLevels: editLevels,
+      updatedAt: new Date().toISOString()
+    });
+    // Auto-dismiss the linked flag if one exists
+    if(editingFlagId) {
+      try { await deleteDoc(doc(db,'flags',editingFlagId)); } catch(e){}
+    }
+    showToast('Question saved!','success');
+    closeEditModal();
+    // Refresh whichever tab is active
+    if(document.getElementById('tab-flags')?.classList.contains('active')) loadFlagTab();
+    else loadAdminTab(document.getElementById('tab-pending')?.classList.contains('active')?'pending':'approved');
+  } catch(e){ showToast('Error saving: ' + e.message,'error'); console.error(e); }
+};
+
+window.resetQuestionStats = async () => {
+  if(!editingQuestionId) return;
+  if(!confirm('Reset all performance stats for this question?')) return;
+  try {
+    await updateDoc(doc(db,'questions',editingQuestionId), { stats: {attempts:0, correct:0} });
+    showToast('Stats reset','success');
+    document.getElementById('edit-stats-row').style.display = 'none';
+  } catch(e){ showToast('Error','error'); }
+};
+
+// ── PERFORMANCE STATS ─────────────────────────────────────────────────────────
+function getDifficultyLabel(attempts, correct) {
+  if(!attempts || attempts < 3) return {label:'NEW', cls:'diff-new', pct: null};
+  const rate = correct / attempts;
+  if(rate > 0.80) return {label:'EASY', cls:'diff-easy', pct: Math.round(rate*100)};
+  if(rate >= 0.50) return {label:'MODERATE', cls:'diff-moderate', pct: Math.round(rate*100)};
+  return {label:'HARD', cls:'diff-hard', pct: Math.round(rate*100)};
+}
+
+function getDifficultyColor(pct) {
+  if(pct === null) return 'var(--text-dim)';
+  if(pct > 80) return 'var(--green)';
+  if(pct >= 50) return 'var(--accent2)';
+  return 'var(--red)';
+}
+
+async function recordAnswer(questionId, isCorrect) {
+  try {
+    const {increment} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    await updateDoc(doc(db, 'questions', questionId), {
+      'stats.attempts': increment(1),
+      'stats.correct': isCorrect ? increment(1) : increment(0)
+    });
+  } catch(e) {
+    // Stats update failing silently is OK
+  }
+}
+
+function showQuestionStats(q, isCorrect) {
+  const el = document.getElementById('quiz-stats-reveal');
+  if(!el) return;
+  const stats = q.stats || {};
+  const attempts = (stats.attempts || 0) + 1; // include this answer
+  const correct = (stats.correct || 0) + (isCorrect ? 1 : 0);
+  const diff = getDifficultyLabel(attempts, correct);
+  const pct = diff.pct;
+  const color = getDifficultyColor(pct);
+  el.innerHTML = `
+    <span class="diff-badge ${diff.cls}">${diff.label}</span>
+    ${pct !== null ? `
+      <div class="stats-bar-wrap"><div class="stats-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <span style="color:${color}">${pct}% correct</span>
+      <span style="color:var(--text-dim)">${attempts} attempt${attempts!==1?'s':''}</span>
+    ` : `<span style="color:var(--text-dim)">Not enough data yet</span>`}
+  `;
+  el.classList.add('show');
+}
 
 // ── FLAG SYSTEM ───────────────────────────────────────────────────────────────
 let currentFlagQuestion = null;
@@ -1558,6 +1751,66 @@ seedStarterQuestions();
 loadQuestionCounts();
 updateMissedUI();
 </script>
+
+
+<!-- EDIT QUESTION MODAL -->
+<div id="edit-modal" class="edit-modal" style="display:none" onclick="if(event.target===this)closeEditModal()">
+  <div class="edit-modal-box">
+    <div class="edit-modal-title">✏️ EDIT QUESTION</div>
+    <div class="edit-modal-sub" id="edit-modal-sub">QUESTION ID: —</div>
+    <input type="hidden" id="edit-q-id">
+    <input type="hidden" id="edit-flag-id">
+    <div class="form-group">
+      <label class="form-label">CATEGORY</label>
+      <select class="form-select" id="edit-category">
+        <option>Airway & Breathing</option><option>Cardiology</option><option>Trauma</option>
+        <option>Medical Emergencies</option><option>Pharmacology</option><option>Patient Assessment</option>
+        <option>Operations</option><option>Medical Terminology</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">QUESTION</label>
+      <textarea class="form-textarea" id="edit-question" style="min-height:90px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ANSWER OPTIONS</label>
+      <div class="options-grid">
+        <div class="option-input-group"><span class="option-label-tag">A</span><input class="form-input" id="edit-opt-a"></div>
+        <div class="option-input-group"><span class="option-label-tag">B</span><input class="form-input" id="edit-opt-b"></div>
+        <div class="option-input-group"><span class="option-label-tag">C</span><input class="form-input" id="edit-opt-c"></div>
+        <div class="option-input-group"><span class="option-label-tag">D</span><input class="form-input" id="edit-opt-d"></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">CORRECT ANSWER</label>
+      <select class="form-select" id="edit-correct">
+        <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">EXPLANATION</label>
+      <textarea class="form-textarea" id="edit-explanation"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">CERTIFICATION LEVELS</label>
+      <div class="level-check-row">
+        <div class="level-check" id="ec-emr" onclick="toggleEditLevel('EMR')">EMR</div>
+        <div class="level-check" id="ec-emt" onclick="toggleEditLevel('EMT')">EMT</div>
+        <div class="level-check" id="ec-aemt" onclick="toggleEditLevel('AEMT')">AEMT</div>
+        <div class="level-check" id="ec-paramedic" onclick="toggleEditLevel('Paramedic')">PARAMEDIC</div>
+      </div>
+    </div>
+    <div class="form-group" id="edit-stats-row" style="display:none">
+      <label class="form-label">PERFORMANCE STATS</label>
+      <div id="edit-stats-display" style="font-family:var(--mono);font-size:0.75rem;color:var(--text-dim)"></div>
+      <button class="btn-delete" style="margin-top:0.5rem;font-size:0.65rem" onclick="resetQuestionStats()">RESET STATS</button>
+    </div>
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1rem">
+      <button class="btn-back" onclick="closeEditModal()">CANCEL</button>
+      <button class="btn-primary" onclick="saveEditedQuestion()" style="font-size:0.9rem;padding:9px 22px">SAVE CHANGES</button>
+    </div>
+  </div>
+</div>
 
 <!-- FLAG MODAL -->
 <div id="flag-modal" class="flag-modal" style="display:none" onclick="if(event.target===this)closeFlagModal()">
