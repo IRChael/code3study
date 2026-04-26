@@ -1003,6 +1003,10 @@ async function loadQuestionCounts(){
 window.startQuizByCategory=async(category)=>{ isMissedQuiz=false; await loadAllQuestions(); currentCategory=category; const approved=allQuestions.filter(q=>q.status==='approved').filter(q=>{ if(!q.certLevels&&!q.certLevel) return true; const levels=q.certLevels||(q.certLevel?[q.certLevel]:[]); return levels.includes(currentLevel)||currentLevel==='Paramedic'&&levels.length>0; }); quizQuestions=shuffle(category==='Mixed'?[...approved]:approved.filter(q=>q.category===category)).slice(0,20); if(quizQuestions.length===0){showToast('No questions in this category yet!','error');return;} currentQuestionIndex=0; score=0; showScreen('screen-quiz'); renderQuestion(); };
 
 function renderQuestion(){
+  // Reset flag button
+  const flagBtn = document.getElementById('quiz-flag-btn');
+  if(flagBtn){ flagBtn.classList.remove('flagged'); flagBtn.disabled = false; flagBtn.innerHTML = '🚩 FLAG'; }
+
   const q = quizQuestions[currentQuestionIndex];
   document.getElementById('quiz-category-tag').textContent = `// ${q.category?.toUpperCase()}`;
   document.getElementById('quiz-question-text').textContent = q.question;
@@ -1547,13 +1551,7 @@ window.submitFlag = async () => {
   }
 };
 
-// Reset flag button on each new question
-const _origRenderQuestion = renderQuestion;
-function renderQuestion() {
-  _origRenderQuestion();
-  const flagBtn = document.getElementById('quiz-flag-btn');
-  if(flagBtn){ flagBtn.classList.remove('flagged'); flagBtn.disabled = false; flagBtn.innerHTML = '🚩 FLAG'; }
-}
+// Reset flag button handled inside renderQuestion directly
 
 // INIT
 seedStarterQuestions();
