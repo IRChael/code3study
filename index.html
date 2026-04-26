@@ -62,6 +62,14 @@
 
 
 
+
+  /* DEDUPE */
+  .dedupe-group { background: var(--surface); border: 1px solid rgba(255,140,0,0.4); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+  .dedupe-group-title { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 2px; color: var(--accent2); margin-bottom: 0.75rem; }
+  .dedupe-item { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--border); gap: 1rem; }
+  .dedupe-item:last-child { border-bottom: none; }
+  .dedupe-item-text { font-size: 0.82rem; flex: 1; color: var(--text-dim); }
+  .dedupe-item-text.primary { color: var(--text); font-weight: 500; }
   /* EDIT QUESTION MODAL */
   .edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 6000; display: flex; align-items: flex-start; justify-content: center; padding: 1rem; overflow-y: auto; }
   .edit-modal-box { background: var(--surface); border: 1px solid var(--gold); border-radius: 10px; padding: 2rem; width: 100%; max-width: 680px; margin: auto; animation: fadeInUp 0.2s ease; }
@@ -507,7 +515,10 @@
       </div>
 
       <div id="page-admin" style="display:none">
-        <div class="page-header"><div class="page-title">ADMIN PANEL</div><div class="page-sub">// QUESTION MANAGEMENT</div></div>
+        <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end">
+          <div><div class="page-title">ADMIN PANEL</div><div class="page-sub">// QUESTION MANAGEMENT</div></div>
+          <button class="btn-secondary" onclick="findAndRemoveDuplicates()" style="font-size:0.75rem;padding:7px 14px;border-color:var(--accent2);color:var(--accent2)">🔍 FIND DUPLICATES</button>
+        </div>
         <div class="tabs">
           <button class="tab active" id="tab-pending" onclick="loadAdminTab('pending')">PENDING</button>
           <button class="tab" id="tab-approved" onclick="loadAdminTab('approved')">APPROVED</button>
@@ -1746,9 +1757,125 @@ window.submitFlag = async () => {
 
 // Reset flag button handled inside renderQuestion directly
 
+
+// ── DUPLICATE DETECTION & REMOVAL ─────────────────────────────────────────────
+window.findAndRemoveDuplicates = async () => {
+  const listEl = document.getElementById('admin-list');
+  listEl.innerHTML = '<div class="loading"><div class="spinner"></div>SCANNING FOR DUPLICATES...</div>';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+  await loadAllQuestions();
+
+  // Normalize question text for comparison
+  const normalize = str => str.toLowerCase().trim().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');
+
+  // Group by normalized question text
+  const groups = {};
+  allQuestions.forEach(q => {
+    const key = normalize(q.question || '');
+    if(!key) return;
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(q);
+  });
+
+  // Find groups with more than one question
+  const dupeGroups = Object.values(groups).filter(g => g.length > 1);
+
+  if(dupeGroups.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><div class="empty-state-text">NO DUPLICATES FOUND</div></div>';
+    showToast('No duplicates found!', 'success');
+    return;
+  }
+
+  // Count total duplicates
+  const totalDupes = dupeGroups.reduce((sum, g) => sum + g.length - 1, 0);
+  showToast(`Found ${totalDupes} duplicate${totalDupes!==1?'s':''} in ${dupeGroups.length} group${dupeGroups.length!==1?'s':''}`, 'error');
+
+  // Render duplicate groups
+  listEl.innerHTML = `
+    <div style="margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-family:var(--mono);font-size:0.72rem;color:var(--accent2)">${totalDupes} DUPLICATE${totalDupes!==1?'S':''} FOUND IN ${dupeGroups.length} GROUP${dupeGroups.length!==1?'S':''}</div>
+      <button class="btn-primary" onclick="removeAllDuplicates()" style="font-size:0.8rem;padding:7px 18px;background:var(--red)">🗑 REMOVE ALL DUPLICATES</button>
+    </div>
+    ${dupeGroups.map((group, gi) => `
+      <div class="dedupe-group">
+        <div class="dedupe-group-title">GROUP ${gi+1} — ${group.length} COPIES</div>
+        ${group.map((q, i) => `
+          <div class="dedupe-item">
+            <div class="dedupe-item-text ${i===0?'primary':''}">
+              ${i===0?'✅ KEEP: ':'🔴 DUPE: '}<strong>${q.category}</strong> · ${q.status?.toUpperCase()} · ${(q.certLevels||[]).join('/')||'no levels'}
+              <br><span style="font-size:0.78rem">${q.question.substring(0,80)}${q.question.length>80?'…':''}</span>
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-shrink:0">
+              <button class="btn-approve" onclick="openEditModal('${q.id}',null)" style="font-size:0.65rem;padding:4px 10px">✏️</button>
+              ${i>0?`<button class="btn-delete" onclick="deleteDupe('${q.id}')" style="font-size:0.65rem;padding:4px 10px">DELETE</button>`:'<span style="font-family:var(--mono);font-size:0.6rem;color:var(--green);padding:4px 8px">PRIMARY</span>'}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('')}
+  `;
+
+  // Store dupe IDs for bulk remove
+  window._dupeIds = dupeGroups.flatMap(g => g.slice(1).map(q => q.id));
+};
+
+window.deleteDupe = async (id) => {
+  try {
+    await deleteDoc(doc(db,'questions',id));
+    showToast('Duplicate removed','success');
+    findAndRemoveDuplicates(); // refresh
+  } catch(e) { showToast('Error removing duplicate','error'); }
+};
+
+window.removeAllDuplicates = async () => {
+  const ids = window._dupeIds || [];
+  if(ids.length === 0){ showToast('No duplicates to remove','error'); return; }
+  if(!confirm(`Remove ${ids.length} duplicate question${ids.length!==1?'s':''}? This keeps the first copy of each.`)) return;
+  const listEl = document.getElementById('admin-list');
+  listEl.innerHTML = '<div class="loading"><div class="spinner"></div>REMOVING DUPLICATES...</div>';
+  let removed = 0;
+  for(const id of ids) {
+    try { await deleteDoc(doc(db,'questions',id)); removed++; } catch(e){}
+  }
+  showToast(`Removed ${removed} duplicate${removed!==1?'s':''}!`, 'success');
+  window._dupeIds = [];
+  await loadAllQuestions();
+  findAndRemoveDuplicates(); // will show "no duplicates" now
+};
+
+// Also run a silent dedup check on startup and seed
+async function deduplicateOnSeed() {
+  // After seeding, silently remove any exact text duplicates keeping approved > pending
+  try {
+    const snap = await getDocs(collection(db,'questions'));
+    const all = snap.docs.map(d => ({id:d.id,...d.data()}));
+    const normalize = str => (str||'').toLowerCase().trim().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');
+    const seen = {};
+    const toDelete = [];
+    // Sort: approved first, then by submittedAt ascending (keep oldest)
+    all.sort((a,b) => {
+      if(a.status==='approved' && b.status!=='approved') return -1;
+      if(b.status==='approved' && a.status!=='approved') return 1;
+      return (a.submittedAt||'').localeCompare(b.submittedAt||'');
+    });
+    all.forEach(q => {
+      const key = normalize(q.question);
+      if(!key) return;
+      if(seen[key]) { toDelete.push(q.id); }
+      else { seen[key] = q.id; }
+    });
+    if(toDelete.length > 0) {
+      console.log(`Auto-removing ${toDelete.length} duplicate questions`);
+      for(const id of toDelete) {
+        try { await deleteDoc(doc(db,'questions',id)); } catch(e){}
+      }
+    }
+  } catch(e) { console.error('Dedupe error:', e); }
+}
+
 // INIT
-seedStarterQuestions();
-loadQuestionCounts();
+seedStarterQuestions().then(()=>deduplicateOnSeed()).then(()=>loadQuestionCounts());
 updateMissedUI();
 </script>
 
